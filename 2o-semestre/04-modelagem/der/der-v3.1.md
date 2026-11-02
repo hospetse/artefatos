@@ -10,7 +10,8 @@ Código do diagrama em [DBML](https://dbml.dbdiagram.io), para abrir no [dbdiagr
 // users.auth_user_id = user_auth.id, mantido pela chamada interna Auth → back-end.
 //
 // Fonte: prisma/schema.prisma e migrations da develop de cada repositório.
-// Back-end: 6 migrations, até 20261030190000_adiciona_aceite_e_recusa_da_solicitacao.
+// Back-end: 7 migrations, até 20261031120000_adiciona_documentos_do_host. Auth: 2 migrations, até 20261017140837_add_terms_to_user_auth.
+// Conferido com a develop em 02/11/2026: back-end 5fa22f2, Auth 11c9e25.
 // Os CHECKs não aparecem no schema do Prisma: estão nas notas de cada coluna, copiados das migrations.
 
 Project hospetse {
