@@ -6,12 +6,13 @@ O que o Hospetse resolve, para quem, e o que o sistema precisa fazer. Leia nesta
 |---|---|---|---|---|
 | 1 | TAP — Termo de Abertura do Projeto | [tap-termo-de-abertura.md](tap-termo-de-abertura.md) | [PDF](tap-termo-de-abertura-v2.pdf) | [Wiki #62](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/62) |
 | 2 | Pesquisa sobre cuidados com pets (52 respostas) | — | [PDF](pesquisa-sobre-cuidados-com-pets.pdf) | [Wiki #45](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/45) |
-| 3 | Documento de Requisitos Funcionais e Não Funcionais v2 | [requisitos-funcionais-e-nao-funcionais-v2.md](requisitos-funcionais-e-nao-funcionais-v2.md) | [DOCX](requisitos-funcionais-e-nao-funcionais-v2.docx) | [Wiki #109](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/109) |
-| 4 | Glossário de Termos de Negócio v2 | [glossario-v2.md](glossario-v2.md) | — | [Wiki #107](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/107) |
-| 5 | Especificação dos 73 Casos de Uso v2 | [casos-de-uso-v2.md](casos-de-uso-v2.md) | [PDF](casos-de-uso-v2.pdf) | [Wiki #78](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/78) |
-| 6 | User Stories v2 | [user-stories-v2.md](user-stories-v2.md) | [PDF](user-stories-v2.pdf) | [Wiki #81](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/81) |
-| 7 | User Stories detalhadas v2, com critérios de aceite | [user-stories-detalhadas-v2.md](user-stories-detalhadas-v2.md) | [PDF](user-stories-detalhadas-v2.pdf) | [Wiki #84](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/84) |
-| 8 | Matriz de Rastreabilidade | [matriz-de-rastreabilidade.md](matriz-de-rastreabilidade.md) | [XLSX](matriz-de-rastreabilidade-v2.xlsx) | [Wiki #124](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/124) |
+| 3 | Pesquisa de mercado e aplicação de ferramentas: Análise SWOT, Duplo Diamante, Matriz GUT e Matriz RACI | — | [DOCX](pesquisa-de-mercado-e-ferramentas.docx) | [Wiki #45](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/45) |
+| 4 | Documento de Requisitos Funcionais e Não Funcionais v2 | [requisitos-funcionais-e-nao-funcionais-v2.md](requisitos-funcionais-e-nao-funcionais-v2.md) | [DOCX](requisitos-funcionais-e-nao-funcionais-v2.docx) | [Wiki #109](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/109) |
+| 5 | Glossário de Termos de Negócio v2 | [glossario-v2.md](glossario-v2.md) | — | [Wiki #107](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/107) |
+| 6 | Especificação dos 73 Casos de Uso v2 | [casos-de-uso-v2.md](casos-de-uso-v2.md) | [PDF](casos-de-uso-v2.pdf) | [Wiki #78](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/78) |
+| 7 | User Stories v2 | [user-stories-v2.md](user-stories-v2.md) | [PDF](user-stories-v2.pdf) | [Wiki #81](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/81) |
+| 8 | User Stories detalhadas v2, com critérios de aceite | [user-stories-detalhadas-v2.md](user-stories-detalhadas-v2.md) | [PDF](user-stories-detalhadas-v2.pdf) | [Wiki #84](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/84) |
+| 9 | Matriz de Rastreabilidade | [matriz-de-rastreabilidade.md](matriz-de-rastreabilidade.md) | [XLSX](matriz-de-rastreabilidade-v2.xlsx) | [Wiki #124](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/124) |
 
 ## Como os artefatos se ligam
 
