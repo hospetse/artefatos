@@ -8,7 +8,8 @@ O planejamento e o acompanhamento do trabalho ficam no [Azure DevOps](https://de
 | Definition of Done e critérios de aceite | [definition-of-done.md](definition-of-done.md) | [Wiki #34](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/34) |
 | Epic HSP-EP-001 — Identidade, conta e acesso | [epic-hsp-ep-001.md](epic-hsp-ep-001.md) | [Wiki #69](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/69) |
 | Compromissos da Sprint 7 | [compromissos-sprint-7.md](compromissos-sprint-7.md) | [Wiki #86](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/86) |
-| Estimativa inicial em horas por PBI | [estimativa-horas-pbis.md](estimativa-horas-pbis.md) e [planilha](estimativa-pbi-hospetse.xlsx) | [Wiki #80](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/80) |
+| Estimativa inicial em horas por PBI | [estimativa-horas-pbis.md](estimativa-horas-pbis.md) e [XLSX](estimativa-pbi-hospetse.xlsx) | [Wiki #80](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/80) |
+| Visão macro do backlog: Epics, Features e PBIs, com uma aba por Feature | [XLSX](visao-macro.xlsx) | [Wiki #39](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/39) |
 | Backlog completo e sprints | [Azure Boards](https://dev.azure.com/escola-ti/Hospetse/_boards) | — |
 
 ## Como o trabalho é organizado
