@@ -1,0 +1,94 @@
+@startuml auth-service
+title Hospetse - Auth Server - Diagrama de Classes
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "hospetse-auth-service" {
+
+  class UserAuth {
+    - email: String
+    - passwordHash: String
+    - status: UserAuthStatus
+    - provisionedAt: DateTime
+    - termsVersion: String
+    - termsAcceptedAt: DateTime
+    + {static} register(challengeId, pin, password, name, termsVersion): UserAuth
+    + {static} login(email, password)
+  }
+
+  class RefreshToken {
+    - tokenHash: String
+    - expiresAt: DateTime
+    - revokedAt: DateTime
+    + {static} issue(userAuth): RefreshToken
+    + {static} refresh(token)
+  }
+
+  class EmailVerification {
+    - email: String
+    - pinHash: String
+    - expiresAt: DateTime
+    - attempts: int
+    - consumedAt: DateTime
+    - invalidatedAt: DateTime
+    + {static} requestPin(email, sender): EmailVerification
+  }
+
+  enum UserAuthStatus {
+    pending_provisioning
+    active
+  }
+
+  interface EmailSender {
+    + send(message)
+  }
+  class ConsoleEmailSender {
+    + send(message)
+  }
+  class FakeEmailSender {
+    + send(message)
+  }
+  class ResendEmailSender {
+    - from: String
+    - http: AxiosInstance
+    + send(message)
+  }
+
+  interface UserProvisioner {
+    + provision(authUserId, email, name)
+  }
+  class HttpUserProvisioner {
+    + provision(authUserId, email, name)
+  }
+  class FakeUserProvisioner {
+    + provision(authUserId, email, name)
+  }
+}
+
+' Fora de pacote: com o User dentro de um package, o PlantUML desvia a linha por cima e esconde o 0..1
+class User <<hospetse-backend>>
+
+UserAuth "1" *-- "0..*" RefreshToken
+UserAuth ..> EmailVerification : valida o PIN
+UserAuth ..> UserProvisioner : provisiona no backend
+EmailVerification ..> EmailSender : envia o PIN
+
+EmailSender <|.. ConsoleEmailSender
+EmailSender <|.. FakeEmailSender
+EmailSender <|.. ResendEmailSender
+note bottom of ResendEmailSender
+  envia de verdade: POST https://api.resend.com/emails
+  falha vira 503, sem retry (nao duplicar o PIN)
+end note
+UserProvisioner <|.. HttpUserProvisioner
+UserProvisioner <|.. FakeUserProvisioner
+
+UserAuth "1" -right- "0..1" User : provisiona >
+note bottom of User
+  users.auth_user_id = user_auth.id
+  bancos diferentes, sem FK
+end note
+
+@enduml

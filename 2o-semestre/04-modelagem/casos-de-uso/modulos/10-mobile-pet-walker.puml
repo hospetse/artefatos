@@ -1,0 +1,49 @@
+@startuml 10_Mobile_Pet_Walker
+ title HOSPETSE — Mobile — Módulo Pet Walker
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Prestador" as prestador
+ actor "Pet Walker" as walker
+ actor "Tempo" as tempo <<sistema>>
+
+ walker -[norank]-|> prestador
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Módulo Pet Walker" {
+     package "Cadastro e disponibilidade" {
+       usecase "HPET18\nCadastrar-se como\nPet Walker" as UC18
+       usecase "HPET18a\nEditar Perfil\nde Pet Walker" as UC18a
+       usecase "HPET18b\nDefinir Área de Atuação/\nDisponibilidade (Pet Walker)" as UC18b
+     }
+     package "Solicitação e execução" {
+       usecase "HPET19\nAceitar/Recusar Passeio" as UC19
+       usecase "HPET19b\nRegistrar Execução\ndo Passeio" as UC19b
+     }
+   }
+ }
+
+ walker -- UC18
+ walker -- UC18a
+ walker -- UC18b
+ walker -- UC19
+ walker -- UC19b
+ tempo -- UC19
+
+ legend right
+   <b>Escopo</b>
+   Cadastro, disponibilidade, aceite e execução\n   do serviço de Pet Walker.
+ endlegend
+@enduml

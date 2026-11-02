@@ -1,0 +1,126 @@
+@startuml 08-validacao-de-prestador
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 250
+
+actor "Host" as Host
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App Mobile" as App
+end box
+
+box "hospetse-backend" #FFF8F0
+  control "Back-end" as API
+  database "Banco do back-end" as DBB
+end box
+
+participant "Armazenamento privado\n(a definir)" as Store <<serviço externo>>
+
+box "Web administrativa (ainda sem repositório)" #F5F5F5
+  boundary "Painel Admin" as Web
+end box
+
+actor Administrador as Admin
+
+legend top right
+  **Planejado.** Só a parte 0 existe no código.
+  As rotas das partes 1 a 4 são proposta: ainda não há cadastro de Host,
+  painel do Administrador, trilha de auditoria nem campo de feedback.
+endlegend
+
+== 0. Hoje: o status de validação já filtra a busca ==
+
+
+== 1. Host envia o cadastro (HPET10) ==
+
+Host -> App : preenche os dados do perfil e anexa os documentos
+App -> API : POST /api/v1/me/host-profile\n{ name, cpfCnpj, address, description, acceptedSpecies, ... }
+activate API
+API -> API : confere o JWT e valida os campos (401 ou 400)
+API -> DBB : cria Provider (providerType = hotel, validationStatus = pending)
+API --> App : 201 { id, validationStatus: pending }
+deactivate API
+
+loop cada documento (identidade, comprovante de endereço, cartão CNPJ)
+  App -> API : POST /api/v1/me/host-profile/documents\n(arquivo, type)
+  activate API
+  API -> API : valida tipo e tamanho do arquivo (400)
+  API -> Store : grava o arquivo em área privada
+  Store --> API : storageKey
+  API -> DBB : cria ProviderDocument (type, storageKey)
+  API --> App : 201
+  deactivate API
+end
+
+App --> Host : "seu perfil não aparece na busca até a aprovação"
+
+== 2. Administrador analisa a fila (HPET20b) ==
+
+Admin -> Web : abre a fila de validações
+Web -> API : GET /api/v1/admin/validations?kind=novo|revalidacao|reenvio&role
+activate API
+API -> API : confere o JWT e o papel de Administrador\n(users.account_type = admin; 403 se não for)
+API -> DBB : busca prestadores com validationStatus = pending
+API --> Web : 200 fila paginada
+deactivate API
+
+Admin -> Web : abre um cadastro
+Web -> API : GET /api/v1/admin/validations/{providerId}
+activate API
+API -> DBB : busca o prestador e os documentos
+API -> Store : gera links assinados de curta duração para cada storageKey
+Store --> API : links temporários
+API --> Web : 200 dados, links dos documentos e histórico de decisões
+deactivate API
+Web --> Admin : mostra os dados e os documentos
+
+== 3. Administrador decide ==
+
+Admin -> Web : aprova, ou rejeita com o feedback dos itens a ajustar
+Web -> API : POST /api/v1/admin/validations/{providerId}/approve\nou /reject { feedback }
+activate API
+API -> API : confere o papel de Administrador (403)
+
+alt rejeição sem feedback
+  API --> Web : 400 feedback obrigatório
+else cadastro já decidido por outro Administrador
+  API --> Web : 409 (tela 03I): não aplica uma segunda decisão
+else pode decidir
+  group transação no banco do back-end
+    API -> DBB : validationStatus = approved ou rejected,\nsó se ainda estiver pending
+    API -> DBB : grava a decisão na trilha de auditoria\n(autor, data, decisão, feedback)
+    API -> DBB : cria Notification para o Host
+  end
+  API --> Web : 200 decisão registrada
+end
+deactivate API
+
+alt aprovado
+else rejeitado
+  App -> API : GET /api/v1/me/host-profile
+  API --> App : validationStatus = rejected + feedback
+  App --> Host : mostra o feedback do Administrador
+end
+
+== 4. Host corrige e reenvia (HPET37) ==
+
+Host -> App : ajusta os itens apontados e reenvia
+opt nenhum item apontado no feedback foi alterado
+  App --> Host : pede confirmação antes do envio
+  Host -> App : confirma
+end
+App -> API : PUT /api/v1/me/host-profile (e novos documentos, se for o caso)
+activate API
+API -> API : valida os campos (400)
+group transação no banco do back-end
+  API -> DBB : atualiza o perfil
+  API -> DBB : validationStatus = pending, marcado como reenvio
+end
+API --> App : 200 { validationStatus: pending }
+deactivate API
+
+
+@enduml

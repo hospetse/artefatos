@@ -1,0 +1,50 @@
+@startuml 04-pagamentos
+title Hospetse - Diagrama de Classes - 4. Pagamentos
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 90
+skinparam ranksep 80
+hide empty members
+skinparam groupInheritance 2
+
+package "Pagamentos" {
+  class PaymentMethod {
+    - type: String
+    - token: String
+    - lastDigits: String
+  }
+  class PaymentTransaction {
+    - type: String
+    - status: String
+    - value: decimal
+    - createdDate: DateTime
+  }
+  class Coupon {
+    - code: String
+    - discountType: String
+    - discountValue: decimal
+    - maxUses: int
+    - validFrom: Date
+    - validUntil: Date
+    - active: boolean
+  }
+  class CouponUsage {
+    - usedAt: DateTime
+  }
+}
+
+' Classes de outras secoes: so o nome; o estereotipo diz em qual secao estao detalhadas
+class Tutor <<Contas e perfis>> #white;line.dashed
+abstract class Provider <<Prestadores e agenda>> #white;line.dashed
+class Reservation <<Pets e reservas>> #white;line.dashed
+
+Tutor "1" -- "cadastra\n0..*" PaymentMethod
+PaymentMethod "0..1" -- "0..*" PaymentTransaction
+Reservation "0..1" -- "0..*" PaymentTransaction
+Provider "0..1" -- "0..*" PaymentTransaction
+Coupon "1" -- "0..*" CouponUsage
+Reservation "1" -- "0..*" CouponUsage
+Tutor "1" -- "0..*" CouponUsage
+
+@enduml

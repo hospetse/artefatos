@@ -1,0 +1,38 @@
+@startuml 05-conversas
+title Hospetse - Diagrama de Classes - 5. Conversas
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 90
+skinparam ranksep 80
+hide empty members
+skinparam groupInheritance 2
+
+package "Conversas" {
+  class Conversation {
+    - status: String
+    - escalatedAt: DateTime
+  }
+  class Message {
+    - senderType: SenderType
+    - content: String
+    - sentAt: DateTime
+  }
+  enum SenderType {
+    tutor
+    host
+    ai
+  }
+}
+
+' Classes de outras secoes: so o nome; o estereotipo diz em qual secao estao detalhadas
+class Tutor <<Contas e perfis>> #white;line.dashed
+abstract class Provider <<Prestadores e agenda>> #white;line.dashed
+class Reservation <<Pets e reservas>> #white;line.dashed
+
+Tutor "1" -- "0..*" Conversation
+Provider "1" -- "0..*" Conversation
+Reservation "0..1" -- "sobre\n0..*" Conversation
+Conversation "1" *-- "0..*" Message
+
+@enduml

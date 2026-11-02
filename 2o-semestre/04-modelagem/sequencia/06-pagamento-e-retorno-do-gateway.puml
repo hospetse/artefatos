@@ -1,0 +1,140 @@
+@startuml 06-pagamento-e-retorno-do-gateway
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+
+actor Tutor
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App Mobile" as App
+end box
+
+box "hospetse-backend" #FFF8F0
+  control "Autenticação e guarda\n(requireUser, requireCanContract)" as MW
+  control "Back-end\n(pagamentos)" as API
+  database "Banco do back-end" as DBB
+end box
+
+participant "Gateway de pagamento\n(sandbox, a definir)" as GW <<serviço externo>>
+
+legend top right
+  **Planejado.** Só a parte 0 existe no código.
+  O gateway ainda não foi escolhido (spike pendente),
+  então rotas e mensagens das partes 1 a 3 são proposta.
+  Setas cinzas na parte 0: o App ainda não chama a rota.
+endlegend
+
+== 0. Hoje: a rota existe, mas ainda não cobra ==
+
+Tutor -[#999999]> App : (sem tela de pagamento ainda)
+App -[#999999]> MW : POST /api/v1/checkout
+activate MW
+MW -> MW : confere o JWT, a conta (não bloqueada/suspensa)\ne o perfil completo (401 ou 403)
+MW -> API : repassa a requisição
+deactivate MW
+activate API
+API -> API : assertCanContract(user)
+API --> App : 501 NOT_IMPLEMENTED (Contratação ainda não disponível)
+deactivate API
+
+== 1. Cadastrar a forma de pagamento (HPET07) ==
+
+Tutor -> App : informa os dados do cartão
+App -> GW : tokeniza o cartão com o SDK do gateway
+activate GW
+GW --> App : token do cartão
+deactivate GW
+App -> MW : POST /api/v1/me/payment-methods\n{ type, token, lastDigits }
+activate MW
+MW -> API : repassa com req.user (Tutor)
+deactivate MW
+activate API
+API -> API : valida os campos (400)
+API -> DBB : grava PaymentMethod (type, token, lastDigits) do Tutor
+API --> App : 201 { id, type, lastDigits }
+deactivate API
+
+== 2. Pagar a reserva aceita (HPET07a, HPET32, HPET26) ==
+
+Tutor -> App : escolhe a forma de pagamento e, se quiser, um cupom
+App -> MW : POST /api/v1/checkout\nheader Idempotency-Key\n{ reservationId, paymentMethodId, couponCode }
+activate MW
+MW -> API : repassa com req.user (Tutor apto a contratar)
+deactivate MW
+activate API
+API -> DBB : busca a reserva deste Tutor e a forma de pagamento dele
+
+alt reserva não existe para este Tutor
+  API --> App : 404 RESERVATION_NOT_FOUND\n(não revela se o id existe para outro Tutor)
+else reserva existe, mas não está em awaiting_payment\nou o prazo de 1 dia útil após o aceite venceu
+  API --> App : 409 RESERVATION_NOT_PAYABLE
+else reserva aguardando pagamento
+
+  opt Tutor informou cupom
+    API -> DBB : busca o cupom e conta os usos
+  end
+
+  alt cupom inválido, inativo, fora da vigência ou no limite de uso
+    API --> App : 400 cupom não aplicável (o total fica sem desconto)
+  else pode cobrar
+    opt cupom válido
+      API -> API : calcula o total com desconto
+    end
+
+    API -> DBB : cria PaymentTransaction (type = payment, status = pending, value)
+
+    API -> GW : cria a cobrança com o token do cartão,\no valor e a chave de idempotência
+    activate GW
+    GW --> API : cobrança recebida, erro ou sem resposta
+    deactivate GW
+
+    alt cobrança recebida, em processamento
+      API --> App : 202 { paymentId, status: pending }
+      App --> Tutor : "pagamento em processamento"
+    else gateway respondeu erro
+      API -> DBB : PaymentTransaction failed
+      API --> App : 502 não foi possível processar o pagamento
+    else gateway não respondeu
+      API --> App : 503 tente de novo com a mesma Idempotency-Key
+    end
+  end
+end
+deactivate API
+
+== 3. Retorno do gateway (HPET26, HPET28a) ==
+
+GW -> API : POST /webhooks/payments (evento assinado pelo gateway)
+activate API
+API -> API : confere a assinatura do evento
+
+alt assinatura inválida
+  API --> GW : 401
+else evento já processado
+  API --> GW : 200 sem efeito (o gateway pode reenviar o mesmo evento)
+else pagamento aprovado
+  group transação no banco do back-end
+    API -> DBB : PaymentTransaction approved, com a referência do gateway
+    API -> DBB : Reservation accepted ("confirmada")
+    API -> DBB : registra CouponUsage, se houver cupom
+    API -> DBB : cria Notification para o Host
+  end
+  API --> GW : 200
+else pagamento recusado
+  group transação no banco do back-end
+    API -> DBB : PaymentTransaction failed
+    API -> DBB : cria Notification para o Tutor tentar com outra forma de pagamento
+  end
+  API --> GW : 200
+end
+deactivate API
+
+App -> MW : consulta a reserva ou a notificação
+MW -> API : repassa com req.user
+API --> App : status atual (accepted ou awaiting_payment)
+App --> Tutor : pagamento aprovado ou pedido de nova tentativa
+
+
+@enduml

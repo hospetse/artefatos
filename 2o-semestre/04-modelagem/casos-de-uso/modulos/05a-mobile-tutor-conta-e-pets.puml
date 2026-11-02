@@ -1,0 +1,40 @@
+@startuml 05a_Mobile_Tutor_Conta_e_Pets
+ title HOSPETSE — Mobile — Tutor — Conta e pets
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Tutor" as tutor
+ tutor -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Tutor — Conta e pets" {
+     usecase "HPET01\nCadastrar-se" as UC01
+     usecase "HPET01c\nEditar Perfil do Tutor" as UC01c
+     usecase "HPET02\nCadastrar Pet" as UC02
+     usecase "HPET02a\nEditar Dados do Pet" as UC02a
+     usecase "HPET02b\nInativar/Remover Pet" as UC02b
+   }
+ }
+
+ tutor -- UC01
+ tutor -- UC01c
+ tutor -- UC02
+ tutor -- UC02a
+ tutor -- UC02b
+
+ legend right
+   <b>Escopo</b>
+   Cadastro da conta do Tutor e manutenção dos pets.
+ endlegend
+@enduml

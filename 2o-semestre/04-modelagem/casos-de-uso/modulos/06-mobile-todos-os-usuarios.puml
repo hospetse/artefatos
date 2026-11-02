@@ -1,0 +1,56 @@
+@startuml 06_Mobile_Todos_os_Usuarios
+ title HOSPETSE — Mobile — Todos os usuários do app
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Todos os usuários do app" {
+     package "Acesso e conta" {
+       usecase UC01a as "HPET01a\nAutenticar-se (Login)\n--\n<i>extension points</i>\naviso de penalidade"
+       usecase "HPET01b\nRecuperar Senha" as UC01b
+       usecase "HPET39\nInativar Própria Conta" as UC39
+     }
+     package "Notificações e denúncias" {
+       usecase "HPET36\nDenunciar Usuário\nou Conteúdo" as UC36
+       usecase UC29 as "HPET29\nConsultar Central\nde Notificações\n--\n<i>extension points</i>\nabrir notificação"
+       usecase "HPET38\nVisualizar Aviso\nde Penalidade" as UC38
+     }
+   }
+ }
+
+ usecase "HPET03\nBuscar Serviços\n[módulo Tutor]" as EXT03 <<referência externa>>
+ usecase "HPET33\nConsultar Avaliações\n[módulo Tutor]" as EXT33 <<referência externa>>
+ usecase "HPET06\nConversar com Host\n[módulo Tutor]" as EXT06 <<referência externa>>
+
+ usuario -- UC36
+ usuario -- UC29
+ usuario -- UC38
+ usuario -- UC01a
+ usuario -- UC01b
+ usuario -- UC39
+
+ UC38 -[dashed,norank]-> UC01a : <<extend>>\n[penalidade não vista ou\nconta suspensa/banida]
+ UC38 -[dashed,norank]-> UC29 : <<extend>>\n[notificação de penalidade]
+ UC36 -[dashed,norank]-> EXT03 : <<extend>>\n[denuncia perfil/foto]
+ UC36 -[dashed,norank]-> EXT33 : <<extend>>\n[denuncia avaliação]
+ UC36 -[dashed,norank]-> EXT06 : <<extend>>\n[denuncia mensagem]
+
+ legend right
+   <b>Escopo</b>
+   Funções compartilhadas por Tutor, Host,\n   Pet Sitter e Pet Walker.
+   <b>Pendência</b>
+   A inclusão de HPET39 permanece a confirmar com o PO.
+ endlegend
+@enduml

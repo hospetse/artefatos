@@ -1,0 +1,70 @@
+@startuml hospetse_c4_components_backend
+!include <C4/C4_Component>
+
+LAYOUT_LEFT_RIGHT()
+skinparam linetype ortho
+
+Title HOSPETSE — C4 Component — Backend API — Arquitetura alvo
+
+Person(tutor, "Tutor", "Usa os recursos do aplicativo")
+Person(admin, "Administrador", "Administra o sistema")
+
+Container_Ext(mobile, "Aplicativo Mobile", "Expo / React Native", "Cliente do Tutor e dos prestadores")
+Container_Ext(web, "Interface Web", "React", "Área pública e módulo administrativo")
+Container_Ext(auth, "Auth Service", "Node.js / Express", "Emite JWT e provisiona usuários")
+Container_Ext(realtime, "Tempo real e IA", "WebSocket / serviço de aplicação", "Chat e escalonamento")
+ContainerDb_Ext(database, "Banco do Backend", "PostgreSQL", "Dados de domínio")
+ContainerDb_Ext(cache, "Cache", "Redis", "Dados de leitura frequente (ADR-004)")
+System_Ext(payment, "Sistema de Pagamento", "Pagamentos, estornos e repasses")
+System_Ext(maps, "Sistema de Mapas", "Localização e rotas")
+
+Container_Boundary(api, "Backend API") {
+    Component(authMiddleware, "Autenticação de usuário", "Express middleware", "Valida JWT, resolve o usuário e protege as rotas")
+    Component(serviceToken, "Autenticação de serviço", "Express middleware", "Protege a rota interna chamada pelo Auth Service")
+    Component(userController, "Controllers de usuário", "Express controllers", "Expõe /me, provisionamento e perfil do Tutor")
+    Component(userService, "Serviços de usuário", "Node.js services", "Aplica regras de usuário, perfil e permissões")
+    Component(petController, "Controller de pets", "Express controller", "Expõe operações de cadastro e consulta de pets")
+    Component(petService, "Serviço de pets", "Node.js service", "Aplica regras de pets e consulta o banco")
+    Component(hostController, "Controllers de Host", "Express controllers", "Expõe busca e detalhes públicos de Hosts")
+    Component(hostService, "Serviços de Host", "Node.js services", "Aplica filtros, elegibilidade e detalhes de Hosts")
+    Component(reservationController, "Controllers de contratação", "Express controllers", "Recebe reservas, solicitações e decisões")
+    Component(reservationService, "Serviços de contratação", "Node.js services", "Aplica regras de disponibilidade, aceite e contratação")
+    Component(paymentService, "Serviço de pagamentos", "Node.js service", "Coordena pagamento, estorno e repasse")
+    Component(notificationService, "Serviço de notificações", "Node.js service", "Registra e entrega notificações da plataforma")
+    Component(prisma, "Acesso a dados", "Prisma Client", "Persiste e consulta entidades do Backend")
+    Component(cacheClient, "Cliente de cache", "Redis client", "Lê, grava e invalida dados de leitura frequente")
+}
+
+Rel(tutor, mobile, "Usa", "HTTPS")
+Rel(admin, web, "Administra", "HTTPS")
+Rel(mobile, authMiddleware, "Envia JWT")
+Rel(web, authMiddleware, "Envia JWT")
+Rel(auth, serviceToken, "Provisiona USER", "HTTPS interno")
+
+Rel(authMiddleware, userController, "Encaminha usuário autenticado")
+Rel(serviceToken, userController, "Autoriza provisionamento")
+Rel(userController, userService, "Executa regras de usuário")
+Rel(petController, petService, "Executa regras de pets")
+Rel(hostController, hostService, "Executa regras de Host")
+Rel(reservationController, reservationService, "Executa regras de contratação")
+
+Rel(userService, prisma, "Lê e grava dados")
+Rel(petService, prisma, "Lê e grava dados")
+Rel(hostService, prisma, "Lê e grava dados")
+Rel(reservationService, prisma, "Lê e grava dados")
+Rel(paymentService, prisma, "Lê e grava transações")
+Rel(notificationService, prisma, "Lê e grava notificações")
+
+Rel(prisma, database, "Consulta e persiste", "SQL")
+Rel(hostService, cacheClient, "Busca resultados em cache")
+Rel(reservationService, cacheClient, "Consulta e invalida disponibilidade")
+Rel(cacheClient, cache, "Lê e grava chaves", "Redis protocol")
+
+Rel(reservationService, paymentService, "Solicita pagamento ou estorno")
+Rel(paymentService, payment, "Processa transação", "HTTPS/webhook")
+Rel(hostService, maps, "Consulta localização", "HTTPS/API")
+Rel(reservationService, notificationService, "Emite eventos de estado")
+Rel(realtime, notificationService, "Entrega eventos em tempo real")
+
+SHOW_LEGEND()
+@enduml

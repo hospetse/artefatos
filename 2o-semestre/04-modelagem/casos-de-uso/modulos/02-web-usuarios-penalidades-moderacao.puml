@@ -1,0 +1,52 @@
+@startuml 02_Web_Usuarios_Penalidades_e_Moderacao
+ title HOSPETSE — Web — Usuários, penalidades e moderação
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Administrador" as admin
+ actor "Responsável pela concessão" as responsavelConcessao
+ actor "Tempo" as tempo <<sistema>>
+
+ rectangle "HOSPETSE" {
+   package "Web — Usuários, penalidades e moderação" {
+     package "Usuários e penalidades" {
+       usecase UC20 as "HPET20\nGerenciar Usuários\n--\n<i>extension points</i>\nconta penalizada"
+       usecase "HPET25a\nAcompanhar e\nReverter Penalidades" as UC25a
+       usecase "HPET25\nGerenciar Penalidades" as UC25
+     }
+     package "Moderação" {
+       usecase UC42 as "HPET42\nModerar Conteúdo\nDenunciado\n--\n<i>extension points</i>\ncontexto da conversa\naplicar penalidade"
+       usecase "HPET42a\nSolicitar Acesso à\nConversa Completa" as UC42a
+     }
+   }
+ }
+
+ admin -- UC20
+ admin -- UC25a
+ admin -- UC25
+ admin -- UC42
+ admin -- UC42a
+ responsavelConcessao -- UC42a
+ tempo -- UC25a
+
+ UC25a -[dashed,norank]-> UC20 : <<extend>>\n[conta suspensa/banida]
+ UC25 -[dashed,norank]-> UC42 : <<extend>>\n[conteúdo descumpre regras]
+ UC42a -[dashed,norank]-> UC42 : <<extend>>\n[análise exige contexto]
+
+ legend right
+   <b>Escopo</b>
+   Gestão de usuários, penalidades, denúncias\n   e moderação de conteúdo.
+   <b>Pendência</b>
+   O papel de Responsável pela concessão em HPET42a\n   permanece a confirmar com o PO (DA-15).
+ endlegend
+@enduml

@@ -1,0 +1,87 @@
+@startuml 01-contas-e-perfis
+title Hospetse - Diagrama de Classes - 1. Contas e perfis
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 90
+skinparam ranksep 80
+hide empty members
+skinparam groupInheritance 2
+
+package "Contas e perfis" {
+  class User {
+    - name: String
+    - email: String
+    - accountType: AccountType
+    - status: String
+    - profileStatus: String
+    - profileCompletedAt: DateTime
+    + completeTutorProfile(cpf, birthDate, phone, address, emergencyContact): Tutor
+    + missingFields(): List<String>
+    + canContract(): boolean
+  }
+  enum AccountType {
+    user
+    admin
+  }
+  class Notification {
+    - type: String
+    - content: String
+    - read: boolean
+  }
+  class Penalty {
+    - type: String
+    - reason: String
+    - appliedBy: User
+  }
+  class Tutor {
+    - name: String
+    - cpf: String
+    - phone: String
+    - birthDate: Date
+    - emergencyContactName: String
+    - emergencyContactPhone: String
+    + createPet(data): Pet
+    + listPets(page, pageSize): List<Pet>
+    + requestReservation(data): Reservation
+  }
+  class Address {
+    - zipCode: String
+    - street: String
+    - number: String
+    - complement: String
+    - neighborhood: String
+    - city: String
+    - state: String
+    - latitude: decimal
+    - longitude: decimal
+  }
+}
+
+' Classes de outras secoes: so o nome; o estereotipo diz em qual secao estao detalhadas
+abstract class Provider <<Prestadores e agenda>> #white;line.dashed
+class Pet <<Pets e reservas>> #white;line.dashed
+class Reservation <<Pets e reservas>> #white;line.dashed
+class Review <<Pets e reservas>> #white;line.dashed
+class PaymentMethod <<Pagamentos>> #white;line.dashed
+class CouponUsage <<Pagamentos>> #white;line.dashed
+class Conversation <<Conversas>> #white;line.dashed
+class UserAuth <<hospetse-auth-service>> #white;line.dashed
+
+UserAuth "1" -- "provisiona\n0..1" User
+User "1" -- "atua como\n0..1" Tutor
+User "1" -- "atua como\n0..1" Provider
+User "1" *-- "recebe\n0..*" Notification
+User "1" -- "sofre\n0..*" Penalty
+Tutor "0..1" -- "mora em\n0..1" Address
+Provider "0..1" -- "atende em\n0..1" Address
+Tutor "1" -- "possui\n0..*" Pet
+Tutor "1" -- "solicita\n0..*" Reservation
+Tutor "1" -- "escreve\n0..*" Review
+Tutor "0..*" -- "favorita\n0..*" Provider
+Reservation ..> "reject cria" Notification
+Tutor "1" -- "cadastra\n0..*" PaymentMethod
+Tutor "1" -- "0..*" CouponUsage
+Tutor "1" -- "0..*" Conversation
+
+@enduml

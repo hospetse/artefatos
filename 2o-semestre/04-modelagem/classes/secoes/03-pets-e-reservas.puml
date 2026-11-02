@@ -1,0 +1,91 @@
+@startuml 03-pets-e-reservas
+title Hospetse - Diagrama de Classes - 3. Pets e reservas
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 90
+skinparam ranksep 80
+hide empty members
+skinparam groupInheritance 2
+
+package "Pets e reservas" {
+  class Pet {
+    - petName: String
+    - petSpecies: PetSpecies
+    - petBreed: String
+    - petSize: PetSize
+    - petBirthDate: Date
+    - medicalNotes: String
+    - behavioralNotes: String
+    - active: boolean
+    + assertFree(startDate, endDate)
+  }
+  enum PetSpecies {
+    dog
+    cat
+  }
+  enum PetSize {
+    small
+    medium
+    large
+  }
+  class Reservation {
+    - status: ReservationStatus
+    - startDate: DateTime
+    - endDate: DateTime
+    - totalValue: decimal
+    - dailyPrice: decimal
+    - notes: String
+    - rejectionReason: String
+    - decidedAt: DateTime
+    - idempotencyKey: String
+    + accept()
+    + reject(reason)
+  }
+  enum ReservationStatus {
+    requested
+    awaiting_payment
+    accepted
+    rejected
+    checked_in
+    checked_out
+    cancelled
+    completed
+  }
+  class PetActivityLog {
+    - activityType: String
+    - description: String
+    - photoUrl: String
+    - registeredAt: DateTime
+  }
+  class Review {
+    - rating: int
+    - comment: String
+  }
+}
+
+' Classes de outras secoes: so o nome; o estereotipo diz em qual secao estao detalhadas
+class Notification <<Contas e perfis>> #white;line.dashed
+class Tutor <<Contas e perfis>> #white;line.dashed
+abstract class Provider <<Prestadores e agenda>> #white;line.dashed
+class Service <<Prestadores e agenda>> #white;line.dashed
+class WalkSlot <<Prestadores e agenda>> #white;line.dashed
+class PaymentTransaction <<Pagamentos>> #white;line.dashed
+class CouponUsage <<Pagamentos>> #white;line.dashed
+class Conversation <<Conversas>> #white;line.dashed
+
+Tutor "1" -- "possui\n0..*" Pet
+Tutor "1" -- "solicita\n0..*" Reservation
+Pet "1" -- "0..*" Reservation
+Service "1" -- "0..*" Reservation
+WalkSlot "0..1" -- "0..*" Reservation
+Reservation "1" *-- "0..*" PetActivityLog
+Reservation "1" -- "0..1" Review
+Tutor "1" -- "escreve\n0..*" Review
+Provider "1" -- "recebe\n0..*" Review
+Reservation ..> "reject cria" Notification
+Reservation "0..1" -- "0..*" PaymentTransaction
+Reservation "1" -- "0..*" CouponUsage
+Reservation "0..1" -- "sobre\n0..*" Conversation
+
+@enduml

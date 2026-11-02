@@ -1,0 +1,59 @@
+@startuml hospetse_c4_containers
+!include <C4/C4_Container>
+
+skinparam linetype ortho
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+Title HOSPETSE — C4 Container — Arquitetura alvo
+
+Person(tutor, "Tutor", "Busca e contrata serviços para pets")
+Person(host, "Host", "Oferece hospedagem para pets")
+Person(sitter, "Pet Sitter", "Oferece cuidados e visitas")
+Person(walker, "Pet Walker", "Oferece passeios")
+Person(admin, "Administrador", "Valida prestadores, modera conteúdo e acompanha a operação")
+
+System_Ext(payment, "Sistema de Pagamento", "Processa pagamentos, estornos e repasses")
+System_Ext(maps, "Sistema de Mapas", "Geocodificação, localização e rotas")
+System_Ext(email, "Serviço de E-mail", "Entrega PINs e notificações por e-mail")
+System_Ext(vet, "Sistema Veterinário", "Apoia ocorrências e atendimentos veterinários")
+System_Ext(transport, "Sistema de Transporte", "Apoia deslocamentos e transporte de pets")
+System_Ext(llm, "LLM API", "Responde dúvidas do Tutor com base na configuração do Host")
+
+System_Boundary(hospetse, "HOSPETSE") {
+    Container(web, "Interface Web", "React", "Área pública e módulo administrativo")
+    Container(mobile, "Aplicativo Mobile", "Expo / React Native", "Experiência do Tutor, Host, Pet Sitter e Pet Walker")
+    Container(auth, "Auth Service", "Node.js / Express / Prisma", "PIN, cadastro, login, JWT e refresh tokens")
+    ContainerDb(authDb, "Banco do Auth", "PostgreSQL", "Identidades, PINs e refresh tokens")
+    Container(api, "Backend API", "Node.js / Express / Prisma", "Usuários, pets, prestadores, reservas, pagamentos e administração")
+    ContainerDb(apiDb, "Banco do Backend", "PostgreSQL", "Dados de domínio, reservas, pagamentos, mensagens e auditoria")
+    ContainerDb(cache, "Cache", "Redis", "Dados de leitura frequente, como disponibilidade e busca de Hosts (ADR-004)")
+    Container(realtime, "Tempo real e IA", "WebSocket / serviço de aplicação", "Chat em tempo real, escalonamento e integração com IA")
+}
+
+Rel(tutor, mobile, "Usa", "HTTPS")
+Rel(host, mobile, "Usa", "HTTPS")
+Rel(sitter, mobile, "Usa", "HTTPS")
+Rel(walker, mobile, "Usa", "HTTPS")
+Rel(admin, web, "Administra", "HTTPS")
+
+Rel(mobile, auth, "Cadastra, autentica e renova tokens", "HTTPS/JSON")
+Rel(web, auth, "Autentica usuários e administradores", "HTTPS/JSON")
+Rel(mobile, api, "Consulta e altera dados do domínio", "HTTPS/JSON + JWT")
+Rel(web, api, "Administra o domínio", "HTTPS/JSON + JWT")
+Rel(auth, authDb, "Lê e grava identidades", "Prisma/SQL")
+Rel(api, apiDb, "Lê e grava dados do domínio", "Prisma/SQL")
+Rel(api, cache, "Lê e invalida dados em cache", "Redis protocol")
+Rel(auth, api, "Provisiona o usuário", "HTTPS interno + token de serviço")
+Rel(auth, email, "Envia PINs e e-mails", "HTTPS/API")
+Rel(api, payment, "Processa pagamentos, estornos e repasses", "HTTPS + webhook")
+Rel(api, maps, "Consulta localização e rotas", "HTTPS/API")
+Rel(api, vet, "Solicita ou registra atendimento veterinário", "HTTPS/API")
+Rel(api, transport, "Solicita transporte de pets", "HTTPS/API")
+Rel(mobile, realtime, "Abre chat e recebe eventos", "WebSocket")
+Rel(web, realtime, "Administra conversas escaladas", "WebSocket/HTTPS")
+Rel(realtime, api, "Lê contexto e grava mensagens", "HTTPS interno")
+Rel(realtime, llm, "Envia contexto permitido e recebe resposta", "HTTPS/API")
+
+SHOW_LEGEND()
+@enduml

@@ -1,0 +1,45 @@
+@startuml 01_Web_Publico_e_Acesso
+ title HOSPETSE — Web — Área pública e acesso administrativo
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Visitante" as visitante
+ actor "Administrador" as admin
+ actor "Loja de Aplicativos" as loja <<sistema externo>>
+
+ rectangle "HOSPETSE" {
+   package "Web — Área pública" {
+     usecase "HPET34\nConsultar Informações\nInstitucionais" as UC34
+     usecase "HPET35\nConhecer e Obter\no Aplicativo" as UC35
+   }
+   package "Web — Acesso e visão geral" {
+     usecase "HPET20a\nAutenticar-se\n(Administrador)" as UC20a
+     usecase "HPET48\nGerenciar Conta\ndo Administrador" as UC48
+     usecase "HPET44\nConsultar Dashboard\nAdministrativo" as UC44
+   }
+ }
+
+ visitante -- UC34
+ visitante -- UC35
+ admin -- UC20a
+ admin -- UC48
+ admin -- UC44
+ UC35 -- loja
+
+ legend right
+   <b>Escopo</b>
+   As duas caixas pequenas ficam juntas nesta visão.\n   Os demais módulos administrativos têm diagramas próprios.
+   <b>Pendência</b>
+   A inclusão de Termos de Uso e Política de Privacidade\n   em HPET34 ainda está a confirmar com o PO.
+ endlegend
+@enduml

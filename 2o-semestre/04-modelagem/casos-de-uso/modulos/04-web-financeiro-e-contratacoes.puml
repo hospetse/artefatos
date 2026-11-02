@@ -1,0 +1,51 @@
+@startuml 04_Web_Financeiro_e_Contratacoes
+ title HOSPETSE — Web — Financeiro e contratações
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Administrador" as admin
+ actor "Gateway de Pagamento\n(sandbox)" as gateway <<sistema externo>>
+
+ rectangle "HOSPETSE" {
+   package "Web — Financeiro e contratações" {
+     package "Configuração financeira" {
+       usecase "HPET40\nGerenciar Cupons\nde Desconto" as UC40
+       usecase "HPET41\nConfigurar Taxa\nda Plataforma" as UC41
+     }
+     package "Consultas e falhas" {
+       usecase "HPET45\nConsultar Contratações" as UC45
+       usecase "HPET46\nConsultar Financeiro\nda Plataforma" as UC46
+       usecase "HPET43\nTratar Transação\nFinanceira com Falha" as UC43
+     }
+   }
+ }
+
+ usecase "HPET28a\nRegistrar Transação Financeira\n[módulo Pagamentos]" as EXT28a <<referência externa>>
+
+ admin -- UC40
+ admin -- UC41
+ admin -- UC45
+ admin -- UC46
+ admin -- UC43
+ gateway -- UC43
+ UC43 -[dashed,norank]-> EXT28a : <<include>>
+
+ note right of UC43
+   Registra a decisão em HPET28a,\n   no módulo Backend de Pagamentos.
+ end note
+
+ legend right
+   <b>Escopo</b>
+   Cupons, taxa da plataforma, contratações,\n   financeiro administrativo e falhas financeiras.
+ endlegend
+@enduml

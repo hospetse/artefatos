@@ -1,0 +1,393 @@
+@startuml HOSPETSE_Casos_de_Uso_Unico
+title HOSPETSE — Diagrama de Casos de Uso v2 (73 casos de uso)
+
+' Layout vertical em 3 colunas: cada coluna = atores primários | casos | atores secundários.
+' As colunas ficam lado a lado por links ocultos; relações entre colunas usam norank.
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam linetype polyline
+skinparam nodesep 18
+skinparam ranksep 55
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #444444
+}
+skinparam ArrowColor #333333
+' plantuml.com limita a 4096 px; local: PLANTUML_LIMIT_SIZE=16384
+scale max 4096 width
+
+' =====================================================================
+' COLUNA 1 — WEB E BACKEND
+' =====================================================================
+actor "Visitante" as visitante
+actor "Administrador" as admin
+
+rectangle "HOSPETSE — Web e Backend" {
+
+  package "Web — Área comercial pública" {
+    usecase "HPET34\nConsultar Informações\nInstitucionais" as UC34
+    usecase "HPET35\nConhecer e Obter\no Aplicativo" as UC35
+  }
+
+  package "Web — Módulo Administrativo (rota /admin)" {
+    package "Acesso e visão geral" {
+      usecase "HPET20a\nAutenticar-se\n(Administrador)" as UC20a
+      usecase "HPET48\nGerenciar Conta\ndo Administrador" as UC48
+      usecase "HPET44\nConsultar Dashboard\nAdministrativo" as UC44
+    }
+    package "Usuários, penalidades e moderação" {
+      usecase UC20 as "HPET20
+Gerenciar Usuários
+--
+<i>extension points</i>
+conta penalizada"
+      usecase "HPET25a\nAcompanhar e\nReverter Penalidades" as UC25a
+      usecase "HPET25\nGerenciar Penalidades" as UC25
+      usecase UC42 as "HPET42
+Moderar Conteúdo
+Denunciado
+--
+<i>extension points</i>
+contexto da conversa
+aplicar penalidade"
+      usecase "HPET42a\nSolicitar Acesso à\nConversa Completa" as UC42a
+    }
+    package "Cadastros de prestadores" {
+      usecase "HPET20b\nValidar Cadastro de\nHost/Prestador" as UC20b
+    }
+    package "Financeiro e contratações" {
+      usecase "HPET40\nGerenciar Cupons\nde Desconto" as UC40
+      usecase "HPET41\nConfigurar Taxa\nda Plataforma" as UC41
+      usecase "HPET45\nConsultar Contratações" as UC45
+      usecase "HPET46\nConsultar Financeiro\nda Plataforma" as UC46
+      usecase "HPET43\nTratar Transação\nFinanceira com Falha" as UC43
+    }
+    package "Auditoria" {
+      usecase "HPET47\nConsultar Trilha\nde Auditoria" as UC47
+    }
+  }
+
+  package "Backend — Sistema de Pagamento" {
+    usecase "HPET26\nProcessar Pagamento" as UC26
+    usecase "HPET28\nProcessar Cancelamento/\nEstorno" as UC28
+    usecase "HPET27\nRepassar Valores" as UC27
+    usecase "HPET28a\nRegistrar Transação\nFinanceira" as UC28a
+  }
+
+}
+
+actor "Loja de Aplicativos" as loja <<sistema externo>>
+actor "Responsável pela\nconcessão" as responsavelConcessao
+actor "Gateway de Pagamento\n(sandbox)" as gateway <<sistema externo>>
+
+' =====================================================================
+' COLUNA 2 — MOBILE: TUTOR E TODOS OS USUÁRIOS
+' =====================================================================
+actor "Tutor" as tutor
+actor "<i>Usuário do App</i>" as usuario
+
+rectangle "HOSPETSE — Mobile: Tutor e todos os usuários" {
+
+  package "Mobile — Módulo Tutor" {
+    usecase "HPET01\nCadastrar-se" as UC01
+    usecase "HPET01c\nEditar Perfil do Tutor" as UC01c
+    usecase "HPET02a\nEditar Dados do Pet" as UC02a
+    usecase "HPET02b\nInativar/Remover Pet" as UC02b
+    usecase "HPET30\nFavoritar Host/Serviço" as UC30
+    usecase "HPET31\nCompartilhar Perfil\nde Host" as UC31
+    usecase "HPET07b\nConsultar Extrato\nde Pagamentos" as UC07b
+    usecase "HPET09\nAcompanhar Rotina\ndo Pet" as UC09
+    usecase "HPET08a\nConsultar Histórico\nde Reservas" as UC08a
+    usecase "HPET08\nAvaliar Host/Serviço" as UC08
+    usecase "HPET04\nSolicitar Reserva" as UC04
+    usecase UC04a as "HPET04a
+Cancelar Reserva/
+Solicitação
+--
+<i>extension points</i>
+pagamento aprovado"
+    usecase "HPET07\nCadastrar Forma\nde Pagamento" as UC07
+    usecase UC07a as "HPET07a
+Realizar Pagamento
+--
+<i>extension points</i>
+aplicar cupom
+nova forma de pagamento"
+    usecase "HPET32\nAplicar Cupom\nde Desconto" as UC32
+    usecase UC05 as "HPET05
+Solicitar Serviço
+(Pet Sitter/Walker)
+--
+<i>extension points</i>
+sem pet ativo"
+    usecase "HPET02\nCadastrar Pet" as UC02
+    usecase UC03 as "HPET03
+Buscar Serviços
+--
+<i>extension points</i>
+sem pet ativo
+denunciar perfil/foto"
+    usecase UC33 as "HPET33
+Consultar Avaliações
+--
+<i>extension points</i>
+denunciar avaliação"
+    usecase UC06 as "HPET06
+Conversar com Host
+--
+<i>extension points</i>
+denunciar mensagem"
+  }
+
+  package "Mobile — Todos os usuários do app" {
+    usecase "HPET36\nDenunciar Usuário\nou Conteúdo" as UC36
+    usecase UC01a as "HPET01a
+Autenticar-se (Login)
+--
+<i>extension points</i>
+aviso de penalidade"
+    usecase "HPET38\nVisualizar Aviso\nde Penalidade" as UC38
+    usecase UC29 as "HPET29
+Consultar Central
+de Notificações
+--
+<i>extension points</i>
+abrir notificação"
+    usecase "HPET01b\nRecuperar Senha" as UC01b
+    usecase "HPET39\nInativar Própria Conta" as UC39
+  }
+}
+
+actor "Assistente de IA" as ia <<sistema>>
+
+' =====================================================================
+' COLUNA 3 — MOBILE: PRESTADORES
+' =====================================================================
+actor "Host" as host
+actor "Pet Sitter" as sitter
+actor "Pet Walker" as walker
+actor "<i>Prestador</i>" as prestador
+
+rectangle "HOSPETSE — Mobile: Prestadores" {
+
+
+  package "Mobile — Módulo Host" {
+    usecase "HPET10\nCadastrar Perfil\nde Host/Hotel" as UC10
+    usecase "HPET10a\nEditar Perfil\nde Host/Hotel" as UC10a
+    usecase "HPET10b\nInativar Perfil de Host" as UC10b
+    usecase "HPET11\nGerenciar Agenda" as UC11
+    usecase "HPET11a\nDefinir Preços e\nTabela de Serviços" as UC11a
+    usecase "HPET06b\nConfigurar Assistente\nde IA do Chat" as UC06b
+    usecase "HPET06c\nGerenciar Conversas\nEscaladas pela IA" as UC06c
+    usecase "HPET12\nReceber Solicitação\nde Reserva" as UC12
+    usecase "HPET12a\nAceitar/Recusar\nSolicitação de Reserva" as UC12a
+    usecase "HPET12b\nConfirmar Check-in" as UC12b
+    usecase "HPET12c\nRegistrar Atividades\ndo Pet" as UC12c
+    usecase "HPET12d\nConfirmar Check-out" as UC12d
+  }
+
+  package "Mobile — Módulo Pet Sitter" {
+    usecase "HPET16\nCadastrar-se como\nPet Sitter" as UC16
+    usecase "HPET16a\nEditar Perfil\nde Pet Sitter" as UC16a
+    usecase "HPET16b\nDefinir Área de Atuação/\nDisponibilidade (Pet Sitter)" as UC16b
+    usecase "HPET17\nReceber Solicitação\nde Visita" as UC17
+    usecase "HPET17a\nAceitar/Recusar\nSolicitação de Visita" as UC17a
+    usecase "HPET17b\nRegistrar Execução\ndo Serviço" as UC17b
+  }
+
+  package "Mobile — Módulo Pet Walker" {
+    usecase "HPET18\nCadastrar-se como\nPet Walker" as UC18
+    usecase "HPET18a\nEditar Perfil\nde Pet Walker" as UC18a
+    usecase "HPET18b\nDefinir Área de Atuação/\nDisponibilidade (Pet Walker)" as UC18b
+    usecase "HPET19\nAceitar/Recusar Passeio" as UC19
+    usecase "HPET19b\nRegistrar Execução\ndo Passeio" as UC19b
+  }
+
+  package "Mobile — Todos os prestadores" {
+    usecase "HPET37\nCorrigir e Reenviar\nCadastro Rejeitado" as UC37
+    usecase "HPET12e\nConsultar Financeiro" as UC12e
+    usecase "HPET12f\nSolicitar Repasse" as UC12f
+  }
+}
+
+actor "Tempo" as tempo <<sistema>>
+
+' =====================================================================
+' POSICIONAMENTO DAS COLUNAS (links ocultos, sem significado UML)
+' =====================================================================
+loja -[hidden]- tutor
+loja -[hidden]- usuario
+ia -[hidden]- prestador
+ia -[hidden]- host
+ia -[hidden]- sitter
+ia -[hidden]- walker
+
+' =====================================================================
+' GENERALIZAÇÃO (modelo de papéis aditivo: toda conta começa como Tutor)
+' =====================================================================
+tutor -[norank]-|> usuario
+prestador -[norank]-|> usuario
+host -[norank]-|> prestador
+sitter -[norank]-|> prestador
+walker -[norank]-|> prestador
+
+' =====================================================================
+' ASSOCIAÇÕES ATOR — CASO DE USO
+' =====================================================================
+visitante -- UC34
+visitante -- UC35
+
+admin -- UC20a
+admin -- UC48
+admin -- UC44
+admin -- UC20
+admin -- UC25a
+admin -- UC25
+admin -- UC42
+admin -- UC42a
+admin -- UC20b
+admin -- UC40
+admin -- UC41
+admin -- UC45
+admin -- UC46
+admin -- UC43
+admin -- UC47
+
+tutor -- UC01
+tutor -- UC01c
+tutor -- UC02
+tutor -- UC02a
+tutor -- UC02b
+tutor -- UC03
+tutor -- UC33
+tutor -- UC30
+tutor -- UC31
+tutor -- UC06
+tutor -- UC04
+tutor -- UC05
+tutor -- UC04a
+tutor -- UC07
+tutor -- UC07a
+tutor -- UC32
+tutor -- UC07b
+tutor -- UC09
+tutor -- UC08a
+tutor -- UC08
+
+usuario -- UC01a
+usuario -- UC01b
+usuario -- UC29
+usuario -- UC38
+usuario -- UC36
+usuario -- UC39
+
+prestador -- UC37
+prestador -- UC12e
+prestador -- UC12f
+
+host -- UC10
+host -- UC10a
+host -- UC10b
+host -- UC11
+host -- UC11a
+host -- UC06b
+host -- UC06c
+host -- UC12
+host -- UC12a
+host -- UC12b
+host -- UC12c
+host -- UC12d
+
+sitter -- UC16
+sitter -- UC16a
+sitter -- UC16b
+sitter -- UC17
+sitter -- UC17a
+sitter -- UC17b
+
+walker -- UC18
+walker -- UC18a
+walker -- UC18b
+walker -- UC19
+walker -- UC19b
+
+' Atores secundários
+UC35 -- loja
+UC42a -- responsavelConcessao
+UC26 -- gateway
+UC28 -- gateway
+UC27 -- gateway
+UC43 -- gateway
+UC06 -- ia
+UC06 -[norank]- host
+UC12a -- tempo
+UC17a -- tempo
+UC19 -- tempo
+UC07a -[norank]- tempo
+UC25a -[norank]- tempo
+
+' =====================================================================
+' INCLUDE (seta do caso base para o incluído — sempre executado)
+' =====================================================================
+UC26 ..> UC28a : <<include>>
+UC28 ..> UC28a : <<include>>
+UC27 ..> UC28a : <<include>>
+UC43 -[dashed,norank]-> UC28a : <<include>>
+UC07a -[dashed,norank]-> UC26 : <<include>>
+UC12f -[dashed,norank]-> UC27 : <<include>>
+
+' =====================================================================
+' EXTEND (seta do caso que estende para o caso base — opcional, [condição])
+' =====================================================================
+UC02 -[dashed,norank]-> UC03 : <<extend>>\n[sem pet ativo]
+UC02 -[dashed,norank]-> UC05 : <<extend>>\n[sem pet ativo]
+UC07 -[dashed,norank]-> UC07a : <<extend>>\n[nova forma após recusa]
+UC32 -[dashed,norank]-> UC07a : <<extend>>\n[informa cupom]
+UC36 -[dashed,norank]-> UC03 : <<extend>>
+UC36 -[dashed,norank]-> UC33 : <<extend>>
+UC36 -[dashed,norank]-> UC06 : <<extend>>
+UC38 -[dashed,norank]-> UC01a : <<extend>>\n[penalidade não vista ou\nconta suspensa/banida]
+UC38 -[dashed,norank]-> UC29 : <<extend>>\n[notificação de penalidade]
+UC37 -[dashed,norank]-> UC29 : <<extend>>\n[cadastro rejeitado]
+UC07a -[dashed,norank]-> UC29 : <<extend>>\n[pagamento pendente]
+UC28 -[dashed,norank]-> UC04a : <<extend>>\n[pagamento já aprovado]
+UC25a -[dashed,norank]-> UC20 : <<extend>>\n[conta suspensa/banida\npor penalidade]
+UC25 -[dashed,norank]-> UC42 : <<extend>>\n[conteúdo descumpre regras]
+UC42a -[dashed,norank]-> UC42 : <<extend>>\n[análise exige contexto]
+
+legend bottom
+  <b>Convenções</b>
+  • Linha cheia sem seta: associação ator–caso de uso. Atores em itálico são abstratos.
+  • Seta com triângulo vazado: generalização entre atores (Tutor e Prestador são Usuários do App;
+    Host, Pet Sitter e Pet Walker são Prestadores). Toda conta começa como Tutor.
+  • <<include>> (seta do caso base para o incluído): sempre executado.
+  • <<extend>> (seta do caso que estende para o caso base): opcional, sob [condição];
+    o ponto de extensão aparece no compartimento "extension points" do caso base.
+  • "Estar autenticado" é pré-condição, não <<include>> de login. HPET28a não tem ator primário.
+  • Os três retângulos são partes do mesmo sistema HOSPETSE, separadas só para leitura.
+  <b>Regras-chave</b>
+  • Canais: Web = Admin + área pública; Mobile = Tutor, Host, Pet Sitter e Pet Walker.
+  • Contratação: aguardando aceite → aguardando pagamento → confirmada. Aceite e pagamento com
+    prazo de 1 dia útil cada (seg. a sex., sem feriados); vencido, o ator Tempo cancela e libera a agenda.
+  • Busca não exige pet; solicitação exige pet ativo escolhido.
+  • Área pública (HPET34): inclusão de Termos de Uso e Política de Privacidade ainda está a confirmar com o PO.
+  • HPET39 permanece no diagrama; sua inclusão está a confirmar com o PO.
+  • HPET39 prevê inativação lógica; dados e histórico são preservados.
+  • Chat via WebSocket: sem reserva ativa, o tutor fala com o Assistente de IA; com o host direto
+    só se o host habilitou atendimento pré-reserva (HPET06b).
+  • Prestadores entram "pendentes de validação"; rejeição segue feedback e reenvio (HPET37).
+  • Suspensão e banimento são sempre penalidades (HPET25); reversão em HPET25a.
+  • Acesso à conversa completa (HPET42a): pedido com justificativa; o ator "Responsável pela concessão"
+    permanece a confirmar com o PO (DA-15).
+  • HPET26/27/28/28a têm "Sistema de Pagamento" como subsistema interno, não como ator externo.
+  • Transações financeiras imutáveis; correção = novo lançamento vinculado.
+  • Repasse só mediante solicitação do prestador (HPET12f → HPET27).
+  • Incidentes (HPET12c, 17b, 19b): gravidade dada pelo prestador e revisada pelo admin (HPET25).
+  • Medicamentos: informados em HPET04/05, assumidos no aceite, registrados na execução.
+  • Veterinário: tutor autoriza em HPET09; se causado pelo tutor, vira custo extra pago ao fim do
+    serviço (HPET07a); caso grave com possível responsabilidade do prestador, o admin decide (HPET25).
+endlegend
+
+@enduml

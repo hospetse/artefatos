@@ -1,0 +1,358 @@
+@startuml hospetse-diagrama-de-classes
+title Hospetse - Diagrama de Classes (back-end e Auth Server)
+
+skinparam classAttributeIconSize 0
+' Garante que a imagem cabe no limite de 4096 px do plantuml.com
+scale max 4096 width
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 50
+hide empty members
+skinparam groupInheritance 2
+
+package "hospetse-backend" {
+
+  package "Contas e perfis" {
+  class User {
+    - name: String
+    - email: String
+    - accountType: AccountType
+    - status: String
+    - profileStatus: String
+    - profileCompletedAt: DateTime
+    + completeTutorProfile(cpf, birthDate, phone, address, emergencyContact): Tutor
+    + missingFields(): List<String>
+    + canContract(): boolean
+  }
+  enum AccountType {
+    user
+    admin
+  }
+  class Notification {
+    - type: String
+    - content: String
+    - read: boolean
+  }
+  ' appliedBy: User no lugar de uma 2a linha User--Penalty, que ficava colada na 1a e embaralhava os rotulos
+  class Penalty {
+    - type: String
+    - reason: String
+    - appliedBy: User
+  }
+  class Tutor {
+    - name: String
+    - cpf: String
+    - phone: String
+    - birthDate: Date
+    - emergencyContactName: String
+    - emergencyContactPhone: String
+    + createPet(data): Pet
+    + listPets(page, pageSize): List<Pet>
+    + requestReservation(data): Reservation
+  }
+  class Address {
+    - zipCode: String
+    - street: String
+    - number: String
+    - complement: String
+    - neighborhood: String
+    - city: String
+    - state: String
+    - latitude: decimal
+    - longitude: decimal
+  }
+
+  }
+  package "Prestadores e agenda" {
+  abstract class Provider {
+    - name: String
+    - cpfCnpj: String
+    - description: String
+    - rating: decimal
+    - urlPicture: String
+    - status: String
+    - validationStatus: ValidationStatus
+    - acceptedSpecies: List<String>
+    - acceptedSizes: List<String>
+    - acceptedBreeds: List<String>
+  }
+  enum ValidationStatus {
+    pending
+    approved
+    rejected
+  }
+  class Host {
+    - capacity: int
+    + assertVacancy(startDate, endDate)
+    + listReservations(status, page, pageSize): List<Reservation>
+  }
+  class PetSitter {
+    - homeAttended: boolean
+    - kilometerRadius: decimal
+  }
+  class PetWalker {
+    - durationWalk: int
+  }
+  class Service {
+    - name: String
+    - price: decimal
+    - active: boolean
+  }
+  class ProviderPhoto {
+    - url: String
+  }
+  class ProviderDocument {
+    - type: DocumentType
+    - storageKey: String
+  }
+  enum DocumentType {
+    identity
+    proof_of_address
+    cnpj_card
+  }
+  class ProviderWorkingHours {
+    - dayOfWeek: int
+    - startTime: Time
+    - endTime: Time
+  }
+  class ProviderBlockedDate {
+    - date: Date
+    - reason: String
+  }
+  class WalkSlot {
+    - startTime: Time
+    - endTime: Time
+    - capacity: int
+    - meetingPoint: String
+  }
+  class ProviderFaq {
+    - question: String
+    - answer: String
+  }
+
+  }
+  package "Pets e reservas" {
+  class Pet {
+    - petName: String
+    - petSpecies: PetSpecies
+    - petBreed: String
+    - petSize: PetSize
+    - petBirthDate: Date
+    - medicalNotes: String
+    - behavioralNotes: String
+    - active: boolean
+    + assertFree(startDate, endDate)
+  }
+  enum PetSpecies {
+    dog
+    cat
+  }
+  enum PetSize {
+    small
+    medium
+    large
+  }
+  class Reservation {
+    - status: ReservationStatus
+    - startDate: DateTime
+    - endDate: DateTime
+    - totalValue: decimal
+    - dailyPrice: decimal
+    - notes: String
+    - rejectionReason: String
+    - decidedAt: DateTime
+    - idempotencyKey: String
+    + accept()
+    + reject(reason)
+  }
+  enum ReservationStatus {
+    requested
+    awaiting_payment
+    accepted
+    rejected
+    checked_in
+    checked_out
+    cancelled
+    completed
+  }
+  class PetActivityLog {
+    - activityType: String
+    - description: String
+    - photoUrl: String
+    - registeredAt: DateTime
+  }
+  class Review {
+    - rating: int
+    - comment: String
+  }
+
+  }
+  package "Pagamentos" {
+  class PaymentMethod {
+    - type: String
+    - token: String
+    - lastDigits: String
+  }
+  class PaymentTransaction {
+    - type: String
+    - status: String
+    - value: decimal
+    - createdDate: DateTime
+  }
+  class Coupon {
+    - code: String
+    - discountType: String
+    - discountValue: decimal
+    - maxUses: int
+    - validFrom: Date
+    - validUntil: Date
+    - active: boolean
+  }
+  class CouponUsage {
+    - usedAt: DateTime
+  }
+
+  }
+  package "Conversas" {
+  class Conversation {
+    - status: String
+    - escalatedAt: DateTime
+  }
+  class Message {
+    - senderType: SenderType
+    - content: String
+    - sentAt: DateTime
+  }
+  enum SenderType {
+    tutor
+    host
+    ai
+  }
+  }
+}
+
+package "hospetse-auth-service" {
+  class UserAuth {
+    - email: String
+    - passwordHash: String
+    - status: UserAuthStatus
+    - provisionedAt: DateTime
+    - termsVersion: String
+    - termsAcceptedAt: DateTime
+    + {static} register(challengeId, pin, password, name, termsVersion): UserAuth
+    + {static} login(email, password)
+  }
+  enum UserAuthStatus {
+    pending_provisioning
+    active
+  }
+  class RefreshToken {
+    - tokenHash: String
+    - expiresAt: DateTime
+    - revokedAt: DateTime
+    + {static} issue(userAuth): RefreshToken
+    + {static} refresh(token)
+  }
+  class EmailVerification {
+    - email: String
+    - pinHash: String
+    - expiresAt: DateTime
+    - attempts: int
+    - consumedAt: DateTime
+    - invalidatedAt: DateTime
+    + {static} requestPin(email, sender): EmailVerification
+  }
+  interface EmailSender {
+    + send(message)
+  }
+  class ConsoleEmailSender {
+    + send(message)
+  }
+  class FakeEmailSender {
+    + send(message)
+  }
+  class ResendEmailSender {
+    - from: String
+    - http: AxiosInstance
+    + send(message)
+  }
+  interface UserProvisioner {
+    + provision(authUserId, email, name)
+  }
+  class HttpUserProvisioner {
+    + provision(authUserId, email, name)
+  }
+  class FakeUserProvisioner {
+    + provision(authUserId, email, name)
+  }
+}
+
+' Auth Server
+UserAuth "1" -right- "0..1" User : provisiona >
+UserAuth "1" *-- "0..*" RefreshToken
+UserAuth ..> EmailVerification : valida o PIN
+UserAuth ..> UserProvisioner : provisiona no backend
+EmailVerification ..> EmailSender : envia o PIN
+EmailSender <|.. ConsoleEmailSender
+EmailSender <|.. FakeEmailSender
+EmailSender <|.. ResendEmailSender
+UserProvisioner <|.. HttpUserProvisioner
+UserProvisioner <|.. FakeUserProvisioner
+
+' Contas e perfis
+User "1" -- "0..1" Tutor : atua como >
+User "1" -- "0..1" Provider : atua como >
+User "1" *-- "0..*" Notification : recebe >
+User "1" -- "0..*" Penalty : sofre >
+Tutor "0..1" -- "0..1" Address : mora em >
+Provider "0..1" -- "0..1" Address : atende em >
+
+' Prestadores e agenda
+Provider <|-- Host
+Provider <|-- PetSitter
+Provider <|-- PetWalker
+Provider "1" -- "0..*" Service : oferece >
+Provider "1" *-- "0..*" ProviderPhoto
+Provider "1" *-- "0..*" ProviderDocument
+Provider "1" *-- "0..*" ProviderWorkingHours
+Provider "1" *-- "0..*" ProviderBlockedDate
+' WalkSlot e so do Pet Walker no dominio; o banco ainda aponta walk_slots.provider_id para providers e nao restringe o tipo
+PetWalker "1" *-- "0..*" WalkSlot : oferece horarios >
+Provider "1" *-- "0..*" ProviderFaq
+
+' Pets e reservas
+Tutor "1" -- "0..*" Pet : possui >
+Tutor "1" -- "0..*" Reservation : solicita >
+Pet "1" -- "0..*" Reservation
+Service "1" -- "0..*" Reservation
+WalkSlot "0..1" -- "0..*" Reservation
+Reservation "1" *-- "0..*" PetActivityLog
+Reservation "1" -- "0..1" Review
+Tutor "1" -- "0..*" Review : escreve >
+Provider "1" -- "0..*" Review : recebe >
+Tutor "0..*" -- "0..*" Provider : favorita >
+Reservation ..> Notification : reject cria
+
+' Pagamentos
+Tutor "1" -- "0..*" PaymentMethod : cadastra >
+PaymentMethod "0..1" -- "0..*" PaymentTransaction
+Reservation "0..1" -- "0..*" PaymentTransaction
+Provider "0..1" -- "0..*" PaymentTransaction
+Coupon "1" -- "0..*" CouponUsage
+Reservation "1" -- "0..*" CouponUsage
+Tutor "1" -- "0..*" CouponUsage
+
+' Conversas
+Tutor "1" -- "0..*" Conversation
+Provider "1" -- "0..*" Conversation
+Reservation "0..1" -- "0..*" Conversation : sobre >
+Conversation "1" *-- "0..*" Message
+
+' Layout: linhas invisiveis, so empilham caixas para o desenho caber em 4096 px (limite do plantuml.com)
+ProviderPhoto -[hidden]down- ProviderDocument
+ProviderWorkingHours -[hidden]down- ProviderBlockedDate
+Host -[hidden]down- ValidationStatus
+Service -[hidden]down- ProviderFaq
+ProviderDocument -[hidden]right- DocumentType
+
+@enduml

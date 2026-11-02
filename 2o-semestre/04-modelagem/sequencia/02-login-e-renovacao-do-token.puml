@@ -1,0 +1,105 @@
+@startuml 02-login-e-renovacao-do-token
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+
+actor Tutor
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App Mobile" as App
+end box
+
+box "hospetse-auth-service" #F4FFF2
+  control "Auth Server" as Auth
+  database "Banco do Auth" as DBA
+end box
+
+box "hospetse-backend" #FFF8F0
+  control "Back-end" as API
+  database "Banco do back-end" as DBB
+end box
+
+legend top right
+  Setas cinzas: planejado no App (#300), ainda não implementado.
+  O resto está implementado.
+endlegend
+
+== 1. Entrar com e-mail e senha ==
+
+Tutor -> App : informa e-mail e senha
+App -> App : valida o formulário
+App -> Auth : POST /api/v1/auth/login\n{ email, password }
+activate Auth
+Auth -> DBA : busca UserAuth pelo e-mail
+Auth -> Auth : confere a senha com Argon2id\n(sem conta, compara com um hash fictício)
+
+alt e-mail sem conta ou senha errada
+  Auth --> App : 401 E-mail ou senha inválidos
+  App --> Tutor : "Login ou senha incorretos"
+else conta com cadastro pendente (pending_provisioning)
+  Auth --> App : 403 Cadastro não concluído
+  App --> Tutor : orienta a refazer o cadastro para receber um novo código
+else senha correta e conta ativa
+  Auth -> Auth : assina o access token JWT RS256 (15 min)
+  Auth -> DBA : salva o hash do refresh token (30 dias)
+  Auth --> App : 200 { accessToken, refreshToken, expiresIn }
+  App -> App : guarda os tokens no SecureStore
+  App --> Tutor : abre a Home
+end
+deactivate Auth
+
+
+== 2. Chamar o back-end com o access token ==
+
+App -> API : GET /api/v1/...\nAuthorization: Bearer accessToken
+activate API
+API -> API : confere a assinatura com a chave pública RS256,\niss, aud e validade (sem chamar o Auth)
+
+alt token válido
+  API -> DBB : busca User pelo sub (authUserId)
+  alt User encontrado
+    API --> App : resposta da rota
+  else User não existe
+    API --> App : 404 USER_NOT_FOUND
+  end
+else token ausente, expirado ou inválido
+  API --> App : 401 TOKEN_INVALID
+end
+deactivate API
+
+== 3. Renovar quando o access token expira ==
+
+App -[#999999]> Auth : POST /api/v1/auth/refresh\n{ refreshToken }
+activate Auth
+Auth -> DBA : busca RefreshToken pelo hash, com o UserAuth
+
+alt token não encontrado
+  Auth --> App : 401 Refresh token inválido
+else token já revogado sendo usado de novo
+  Auth -> DBA : revoga todos os refresh tokens da conta
+  Auth --> App : 401 Refresh token inválido
+else token expirado ou conta não está ativa
+  Auth --> App : 401 Refresh token inválido
+else token válido
+  group transação no banco do Auth (rotação)
+    Auth -> DBA : revoga o token atual, só se ainda estiver aberto
+    Auth -> DBA : salva o hash do novo refresh token (30 dias)
+  end
+  Auth -> Auth : assina um novo access token (15 min)
+  Auth --> App : 200 { accessToken, refreshToken, expiresIn }
+end
+deactivate Auth
+
+alt renovou
+  App -[#999999]> App : troca os tokens no SecureStore
+  App -[#999999]> API : repete a chamada que recebeu 401
+else Auth respondeu 401
+  App -[#999999]> App : apaga os tokens do SecureStore
+  App -[#999999]-> Tutor : volta à tela de login
+end
+
+
+@enduml

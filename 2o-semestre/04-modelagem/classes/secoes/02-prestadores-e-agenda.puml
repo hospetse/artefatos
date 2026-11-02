@@ -1,0 +1,112 @@
+@startuml 02-prestadores-e-agenda
+title Hospetse - Diagrama de Classes - 2. Prestadores e agenda
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 90
+skinparam ranksep 80
+hide empty members
+skinparam groupInheritance 2
+
+package "Prestadores e agenda" {
+  abstract class Provider {
+    - name: String
+    - cpfCnpj: String
+    - description: String
+    - rating: decimal
+    - urlPicture: String
+    - status: String
+    - validationStatus: ValidationStatus
+    - acceptedSpecies: List<String>
+    - acceptedSizes: List<String>
+    - acceptedBreeds: List<String>
+  }
+  enum ValidationStatus {
+    pending
+    approved
+    rejected
+  }
+  class Host {
+    - capacity: int
+    + assertVacancy(startDate, endDate)
+    + listReservations(status, page, pageSize): List<Reservation>
+  }
+  class PetSitter {
+    - homeAttended: boolean
+    - kilometerRadius: decimal
+  }
+  class PetWalker {
+    - durationWalk: int
+  }
+  class Service {
+    - name: String
+    - price: decimal
+    - active: boolean
+  }
+  class ProviderPhoto {
+    - url: String
+  }
+  class ProviderDocument {
+    - type: DocumentType
+    - storageKey: String
+  }
+  enum DocumentType {
+    identity
+    proof_of_address
+    cnpj_card
+  }
+  class ProviderWorkingHours {
+    - dayOfWeek: int
+    - startTime: Time
+    - endTime: Time
+  }
+  class ProviderBlockedDate {
+    - date: Date
+    - reason: String
+  }
+  class WalkSlot {
+    - startTime: Time
+    - endTime: Time
+    - capacity: int
+    - meetingPoint: String
+  }
+  class ProviderFaq {
+    - question: String
+    - answer: String
+  }
+}
+
+' Classes de outras secoes: so o nome; o estereotipo diz em qual secao estao detalhadas
+class User <<Contas e perfis>> #white;line.dashed
+class Tutor <<Contas e perfis>> #white;line.dashed
+class Address <<Contas e perfis>> #white;line.dashed
+class Reservation <<Pets e reservas>> #white;line.dashed
+class Review <<Pets e reservas>> #white;line.dashed
+class PaymentTransaction <<Pagamentos>> #white;line.dashed
+class Conversation <<Conversas>> #white;line.dashed
+
+User "1" -- "atua como\n0..1" Provider
+Provider "0..1" -- "atende em\n0..1" Address
+Provider <|-- Host
+Provider <|-- PetSitter
+Provider <|-- PetWalker
+Provider "1" -- "oferece\n0..*" Service
+Provider "1" *-- "0..*" ProviderPhoto
+Provider "1" *-- "0..*" ProviderDocument
+Provider "1" *-- "0..*" ProviderWorkingHours
+Provider "1" *-- "0..*" ProviderBlockedDate
+PetWalker "1" *-- "oferece horarios\n0..*" WalkSlot
+Provider "1" *-- "0..*" ProviderFaq
+Service "1" -- "0..*" Reservation
+WalkSlot "0..1" -- "0..*" Reservation
+Provider "1" -- "recebe\n0..*" Review
+Tutor "0..*" -- "favorita\n0..*" Provider
+Provider "0..1" -- "0..*" PaymentTransaction
+Provider "1" -- "0..*" Conversation
+ProviderPhoto -[hidden]down- ProviderDocument
+ProviderWorkingHours -[hidden]down- ProviderBlockedDate
+Host -[hidden]down- ValidationStatus
+Service -[hidden]down- ProviderFaq
+ProviderDocument -[hidden]right- DocumentType
+
+@enduml

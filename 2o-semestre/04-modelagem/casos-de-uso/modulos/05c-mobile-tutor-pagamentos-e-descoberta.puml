@@ -1,0 +1,56 @@
+@startuml 05c_Mobile_Tutor_Pagamentos_e_Descoberta
+ title HOSPETSE — Mobile — Tutor — Pagamentos e descoberta
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Tutor" as tutor
+ actor "Tempo" as tempo <<sistema>>
+ tutor -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Tutor — Pagamentos e descoberta" {
+     usecase "HPET07\nCadastrar Forma\nde Pagamento" as UC07
+     usecase UC07a as "HPET07a\nRealizar Pagamento\n--\n<i>extension points</i>\naplicar cupom\nnova forma de pagamento"
+     usecase "HPET07b\nConsultar Extrato\nde Pagamentos" as UC07b
+     usecase "HPET08\nAvaliar Host/Serviço" as UC08
+     usecase "HPET30\nFavoritar Host/Serviço" as UC30
+     usecase "HPET31\nCompartilhar Perfil\nde Host" as UC31
+     usecase "HPET32\nAplicar Cupom\nde Desconto" as UC32
+   }
+ }
+
+ usecase "HPET26\nProcessar Pagamento\n[módulo Pagamentos]" as EXT26 <<referência externa>>
+ usecase "HPET29\nConsultar Central de Notificações\n[módulo comum]" as EXT29 <<referência externa>>
+
+ tutor -- UC07
+ tutor -- UC07a
+ tutor -- UC07b
+ tutor -- UC08
+ tutor -- UC30
+ tutor -- UC31
+ tutor -- UC32
+ tempo -- UC07a
+
+ UC07 -[dashed,norank]-> UC07a : <<extend>>\n[nova forma após recusa]
+ UC32 -[dashed,norank]-> UC07a : <<extend>>\n[informa cupom]
+ UC07a ..> EXT26 : <<include>>
+ UC07a -[dashed,norank]-> EXT29 : <<extend>>\n[pagamento pendente]
+
+ legend right
+   <b>Escopo</b>
+   Forma de pagamento, pagamento, extrato,\n   avaliação, favoritos, compartilhamento e cupom.
+   <b>Referências externas</b>
+   HPET26 e HPET29 permanecem visíveis como\n   dependências de outros módulos.
+ endlegend
+@enduml

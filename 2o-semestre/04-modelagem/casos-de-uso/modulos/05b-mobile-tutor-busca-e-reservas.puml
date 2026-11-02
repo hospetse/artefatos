@@ -1,0 +1,51 @@
+@startuml 05b_Mobile_Tutor_Busca_e_Reservas
+ title HOSPETSE — Mobile — Tutor — Busca e reservas
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Tutor" as tutor
+ tutor -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Tutor — Busca e reservas" {
+     usecase UC03 as "HPET03\nBuscar Serviços\n--\n<i>extension points</i>\nsem pet ativo\ndenunciar perfil/foto"
+     usecase "HPET04\nSolicitar Reserva" as UC04
+     usecase UC04a as "HPET04a\nCancelar Reserva/\nSolicitação\n--\n<i>extension points</i>\npagamento aprovado"
+     usecase UC05 as "HPET05\nSolicitar Serviço\n(Pet Sitter/Walker)\n--\n<i>extension points</i>\nsem pet ativo"
+     usecase "HPET08a\nConsultar Histórico\nde Reservas" as UC08a
+     usecase "HPET09\nAcompanhar Rotina\ndo Pet" as UC09
+   }
+ }
+
+ usecase "HPET02\nCadastrar Pet\n[módulo Conta e pets]" as EXT02 <<referência externa>>
+ usecase "HPET28\nProcessar Cancelamento/Estorno\n[módulo Pagamentos]" as EXT28 <<referência externa>>
+
+ tutor -- UC03
+ tutor -- UC04
+ tutor -- UC04a
+ tutor -- UC05
+ tutor -- UC08a
+ tutor -- UC09
+
+ EXT02 -[dashed,norank]-> UC03 : <<extend>>\n[sem pet ativo]
+ EXT02 -[dashed,norank]-> UC05 : <<extend>>\n[sem pet ativo]
+ EXT28 -[dashed,norank]-> UC04a : <<extend>>\n[pagamento aprovado]
+
+ legend right
+   <b>Escopo</b>
+   Busca, solicitação, cancelamento e acompanhamento\n   de reservas e serviços.
+   <b>Referências externas</b>
+   HPET02 e HPET28 aparecem como referências\n   para manter os extends entre módulos.
+ endlegend
+@enduml

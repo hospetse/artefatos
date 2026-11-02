@@ -1,0 +1,46 @@
+@startuml 08c_Mobile_Host_Reservas_e_Rotina
+ title HOSPETSE — Mobile — Host — Reservas e rotina
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Prestador" as prestador
+ actor "Host" as host
+ actor "Tempo" as tempo <<sistema>>
+ host -[norank]-|> prestador
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Host — Reservas e rotina" {
+     usecase "HPET12\nReceber Solicitação\nde Reserva" as UC12
+     usecase "HPET12a\nAceitar/Recusar\nSolicitação de Reserva" as UC12a
+     usecase "HPET12b\nConfirmar Check-in" as UC12b
+     usecase "HPET12c\nRegistrar Atividades\ndo Pet" as UC12c
+     usecase "HPET12d\nConfirmar Check-out" as UC12d
+   }
+ }
+
+ host -- UC12
+ host -- UC12a
+ host -- UC12b
+ host -- UC12c
+ host -- UC12d
+ tempo -- UC12a
+
+ legend right
+   <b>Escopo</b>
+   Solicitação, aceite, check-in, atividades\n   e check-out da hospedagem.
+   <b>Dependência</b>
+   Incidentes podem originar HPET25, no módulo Web.
+ endlegend
+@enduml

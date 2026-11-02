@@ -1,0 +1,114 @@
+@startuml 07-chat-com-ia-e-escalonamento
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+
+actor Tutor
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App do Tutor" as AppT
+  boundary "App do Host" as AppH
+end box
+
+actor Host
+
+box "hospetse-backend" #FFF8F0
+  control "Servidor WebSocket" as WS
+  database "Banco do back-end" as DBB
+end box
+
+participant "Assistente de IA\n(provedor a definir)" as IA <<serviço externo>>
+
+legend top right
+  **Planejado.** Hoje só existem as tabelas conversations, messages e provider_faqs
+  e o botão "Tire suas dúvidas", ainda sem ação. Não há servidor WebSocket nem provedor de IA.
+endlegend
+
+== 1. Abrir o chat ==
+
+Tutor -> AppT : toca em "Tire suas dúvidas" no perfil do Host
+AppT -> WS : abre a conexão WebSocket com o access token
+activate WS
+WS -> WS : confere o JWT na abertura da conexão
+alt token inválido ou expirado
+  WS --> AppT : recusa a conexão
+else token válido
+  WS -> DBB : busca ou cria a Conversation do Tutor com este Host\n(status = ai_handling)
+  WS -> DBB : carrega o histórico de mensagens
+  WS --> AppT : conexão aberta e histórico
+end
+deactivate WS
+
+== 2. Tutor conversa com a IA ==
+
+Tutor -> AppT : escreve uma pergunta
+AppT ->> WS : mensagem { conversationId, content }
+activate WS
+WS -> DBB : grava Message (senderType = tutor)
+WS -> DBB : carrega as perguntas e respostas cadastradas pelo Host (ProviderFaq)
+WS -> IA : pergunta do Tutor + base do Host
+activate IA
+IA --> WS : resposta, ou "não sei responder com essa base"
+deactivate IA
+
+alt IA conseguiu responder
+  WS -> DBB : grava Message (senderType = ai)
+  WS ->> AppT : entrega a resposta em tempo real
+  AppT --> Tutor : mostra a resposta da IA
+else IA não conseguiu responder
+  group transação no banco do back-end
+    WS -> DBB : Conversation status = escalated, escalatedAt
+    WS -> DBB : cria Notification para o Host
+  end
+  WS ->> AppT : avisa que a conversa foi passada para o Host
+  opt Host conectado
+    WS ->> AppH : nova conversa escalada
+  end
+end
+deactivate WS
+
+opt Tutor pede para falar com um atendente humano
+  AppT ->> WS : pedido de atendimento humano
+  WS -> DBB : encerra o atendimento da IA e escala a conversa, mantendo o histórico
+  WS ->> AppH : nova conversa escalada
+end
+
+== 3. Host responde (HPET06c) ==
+
+Host -> AppH : abre a fila de conversas escaladas
+AppH -> WS : abre a conexão WebSocket com o access token do Host
+activate WS
+WS -> DBB : busca as conversas escaladas dos serviços deste Host
+WS --> AppH : fila e histórico completo, incluindo as trocas com a IA
+deactivate WS
+
+Host -> AppH : escreve a resposta
+AppH ->> WS : mensagem { conversationId, content }
+activate WS
+WS -> WS : confere se a conversa é deste Host
+WS -> DBB : grava Message (senderType = host);\nna primeira resposta, Conversation status = human_handling
+alt Tutor conectado
+  WS ->> AppT : entrega a resposta em tempo real
+  AppT --> Tutor : mostra a resposta do Host
+else Tutor desconectado
+  WS -> DBB : cria Notification para o Tutor
+end
+deactivate WS
+
+== 4. Conexão perdida ==
+
+AppT -x WS : conexão cai
+AppT -> AppT : guarda as mensagens não enviadas numa fila local
+...a rede volta...
+AppT -> WS : reconecta com o access token
+activate WS
+WS -> DBB : busca as mensagens recebidas depois da última que o App tem
+WS --> AppT : mensagens perdidas
+deactivate WS
+AppT ->> WS : reenvia a fila local
+
+
+@enduml

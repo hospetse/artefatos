@@ -1,0 +1,50 @@
+@startuml 05d_Mobile_Tutor_Comunicacao_e_Avaliacoes
+ title HOSPETSE — Mobile — Tutor — Comunicação e avaliações
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Tutor" as tutor
+ actor "Host" as host
+ actor "Prestador" as prestador
+ actor "Assistente de IA" as ia <<sistema>>
+ tutor -[norank]-|> usuario
+ host -[norank]-|> prestador
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Tutor — Comunicação e avaliações" {
+     usecase UC06 as "HPET06\nConversar com Host\n--\n<i>extension points</i>\ndenunciar mensagem"
+     usecase UC33 as "HPET33\nConsultar Avaliações\n--\n<i>extension points</i>\ndenunciar avaliação"
+   }
+ }
+
+ usecase "HPET36\nDenunciar Usuário ou Conteúdo\n[módulo comum]" as EXT36 <<referência externa>>
+ usecase "HPET03\nBuscar Serviços\n[módulo Tutor]" as EXT03 <<referência externa>>
+
+ tutor -- UC06
+ tutor -- UC33
+ host -- UC06
+ ia -- UC06
+
+ EXT36 -[dashed,norank]-> UC06 : <<extend>>\n[denuncia mensagem]
+ EXT36 -[dashed,norank]-> UC33 : <<extend>>\n[denuncia avaliação]
+ EXT36 -[dashed,norank]-> EXT03 : <<extend>>\n[denuncia perfil/foto]
+
+ legend right
+   <b>Escopo</b>
+   Conversa com Host, Assistente de IA e consulta\n   de avaliações.
+   <b>Referência externa</b>
+   HPET36 concentra as denúncias dos módulos\n   de busca, avaliações e chat.
+ endlegend
+@enduml

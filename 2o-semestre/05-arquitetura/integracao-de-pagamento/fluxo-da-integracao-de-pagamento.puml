@@ -1,0 +1,67 @@
+@startuml fluxo-da-integracao-de-pagamento
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam swimlaneWidth same
+
+|#FAFAFA|Tutor|
+|#F2F7FF|App Mobile|
+|#FFF8F0|Back-end|
+|#F5F3FF|Stripe|
+
+|Tutor|
+start
+:Confirma o pagamento
+da contratação aceita;
+
+|App Mobile|
+:POST /api/v1/checkout;
+
+|Back-end|
+:Valida a contratação, o prazo
+e o cupom;
+if (Pode pagar?) then (não)
+  |App Mobile|
+  :Mostra o erro;
+  stop
+else (sim)
+  |Back-end|
+  :Cria a transação pending;
+  |Stripe|
+  :Cria o PaymentIntent;
+  |Back-end|
+  :Devolve o client_secret ao App;
+endif
+
+|App Mobile|
+:Abre o PaymentSheet;
+
+|Tutor|
+:Informa ou escolhe o cartão;
+
+|Stripe|
+:Processa o pagamento
+e faz o 3D Secure, se preciso;
+if (Pagamento aprovado?) then (sim)
+  :Envia payment_intent.succeeded;
+  |Back-end|
+  :Valida a assinatura do webhook;
+  :Aprova o pagamento
+  e confirma a contratação;
+  :Notifica o prestador;
+  |App Mobile|
+  :Consulta o status
+  e mostra a confirmação;
+  stop
+else (não)
+  |Stripe|
+  :Envia payment_intent.payment_failed;
+  |Back-end|
+  :Valida a assinatura do webhook;
+  :Registra a recusa. A contratação
+  segue aguardando pagamento;
+  |App Mobile|
+  :Mostra a recusa e permite
+  tentar com outro cartão;
+  stop
+endif
+@enduml

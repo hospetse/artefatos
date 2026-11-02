@@ -1,0 +1,38 @@
+@startuml hospetse_c4_context
+!include <C4/C4_Context>
+
+LAYOUT_LEFT_RIGHT()
+skinparam linetype ortho
+
+Title HOSPETSE — C4 Context — Arquitetura alvo
+
+Person(tutor, "Tutor", "Busca e contrata serviços para pets")
+Person(host, "Host", "Oferece hospedagem para pets")
+Person(sitter, "Pet Sitter", "Oferece cuidados e visitas")
+Person(walker, "Pet Walker", "Oferece passeios")
+Person(admin, "Administrador", "Administra usuários, prestadores e conteúdo")
+
+System(hospetse, "HOSPETSE", "Plataforma de prestação de serviços para estadia, cuidados e passeio de pets")
+
+System_Ext(payment, "Sistema de Pagamento", "Processa pagamentos, estornos e repasses")
+System_Ext(maps, "Sistema de Mapas", "Localização, geocodificação e rotas")
+System_Ext(email, "Serviço de E-mail", "Entrega PINs e notificações")
+System_Ext(vet, "Sistema Veterinário", "Apoia ocorrências e atendimentos veterinários")
+System_Ext(transport, "Sistema de Transporte", "Apoia deslocamento e transporte de pets")
+System_Ext(llm, "LLM API", "Responde dúvidas com base na configuração do Host")
+
+Rel(tutor, hospetse, "Busca, reserva e acompanha serviços")
+Rel(host, hospetse, "Oferece hospedagem e acompanha reservas")
+Rel(sitter, hospetse, "Oferece e executa serviços")
+Rel(walker, hospetse, "Oferece e executa passeios")
+Rel(admin, hospetse, "Administra a operação")
+
+Rel(hospetse, payment, "Processa pagamentos e repasses", "HTTPS/API")
+Rel(hospetse, maps, "Consulta localização e rotas", "HTTPS/API")
+Rel(hospetse, email, "Envia PINs e notificações", "HTTPS/API")
+Rel(hospetse, vet, "Solicita apoio veterinário", "HTTPS/API")
+Rel(hospetse, transport, "Solicita transporte", "HTTPS/API")
+Rel(hospetse, llm, "Obtém respostas para o chat", "HTTPS/API")
+
+SHOW_LEGEND()
+@enduml

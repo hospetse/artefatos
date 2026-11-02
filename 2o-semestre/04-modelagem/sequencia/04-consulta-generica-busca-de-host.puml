@@ -1,0 +1,84 @@
+@startuml 04-consulta-generica-busca-de-host
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+
+actor Tutor
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App Mobile" as App
+end box
+
+box "hospetse-backend" #FFF8F0
+  control "Autenticação\n(requireUser)" as MW
+  boundary "Controller\n(host-search.controller)" as Ctrl
+  control "Policy\n(host-search-policy)" as Pol
+  control "Service\n(host-search.service)" as Svc
+  database "Banco do back-end" as DBB
+end box
+
+legend top right
+  Setas cinzas: planejado no App. A tela de resultados existe,
+  mas ainda filtra dados de exemplo e não chama a rota.
+  O back-end está implementado (GET /api/v1/hosts/search).
+endlegend
+
+Tutor -> App : informa cidade, período, pet (ou espécie e porte) e faixa de preço
+App -[#999999]> MW : GET /api/v1/hosts/search?city&startDate&endDate&petId&maxPrice&page&pageSize\nAuthorization: Bearer accessToken
+activate MW
+ref over MW, DBB : confere o JWT e carrega o User (401 TOKEN_INVALID ou 404 USER_NOT_FOUND),\ncomo na sequência 3. Para buscar, basta estar autenticado.
+MW -> Ctrl : repassa a requisição com req.user
+deactivate MW
+activate Ctrl
+
+Ctrl -> Pol : parseSearchQuery(req.query)
+Pol -> Pol : confere todos os filtros de uma vez, sem banco
+Pol --> Ctrl : { details } ou { filters }
+
+alt algum filtro inválido
+  Ctrl --> App : 400 VALIDATION_ERROR { details: [campo, motivo] }
+  App -[#999999]-> Tutor : mostra o erro no filtro
+else filtros válidos
+
+  opt Tutor escolheu um pet (petId)
+    Ctrl -> Svc : findTutorPet(req.user.tutor.id, petId)
+    Svc -> DBB : busca o pet ativo deste Tutor
+    Svc --> Ctrl : espécie, porte e raça do pet, ou nada
+  end
+
+  alt petId informado e pet não encontrado (de outro Tutor, inativo ou usuário sem perfil de Tutor)
+    Ctrl --> App : 400 VALIDATION_ERROR { petId: pet não encontrado }
+  else pode buscar
+
+  Ctrl -> Svc : searchHostsService(filters, pet)
+  activate Svc
+  Svc -> Svc : monta o WHERE em SQL: Host elegível (hotel, ativo e aprovado),\nserviço ativo, cidade, faixa de preço e espécie, porte e raça aceitos
+  opt período informado
+    Svc -> Svc : acrescenta: sem dia bloqueado no período e,\nem todos os dias, reservas que ocupam abaixo da capacidade
+  end
+
+  group transação de leitura
+    Svc -> DBB : busca os ids das ofertas, menor diária primeiro, paginado
+    Svc -> DBB : conta o total de ofertas
+  end
+  Svc -> DBB : carrega só os campos públicos das ofertas da página
+  Svc -> Svc : devolve as ofertas na ordem da página
+  Svc --> Ctrl : { items, page, pageSize, total }
+  deactivate Svc
+
+  Ctrl --> App : 200 { items: [hostId, serviceId, name, serviceName, dailyPrice,\npictureUrl, location, reputation], page, pageSize, total }
+
+  alt total = 0
+    App -[#999999]-> Tutor : informa que nenhum Host foi encontrado
+  else há ofertas
+    App -[#999999]-> Tutor : mostra os cards, do mais barato para o mais caro
+  end
+  end
+end
+deactivate Ctrl
+
+
+@enduml

@@ -1,0 +1,36 @@
+@startuml 08b_Mobile_Host_Chat_e_Atendimento
+ title HOSPETSE — Mobile — Host — Chat e atendimento
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Prestador" as prestador
+ actor "Host" as host
+ host -[norank]-|> prestador
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Host — Chat e atendimento" {
+     usecase "HPET06b\nConfigurar Assistente\nde IA do Chat" as UC06b
+     usecase "HPET06c\nGerenciar Conversas\nEscaladas pela IA" as UC06c
+   }
+ }
+
+ host -- UC06b
+ host -- UC06c
+
+ legend right
+   <b>Escopo</b>
+   Configuração do Assistente de IA e gestão\n   das conversas escaladas.
+ endlegend
+@enduml

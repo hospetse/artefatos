@@ -1,0 +1,49 @@
+@startuml 07_Mobile_Todos_os_Prestadores
+ title HOSPETSE — Mobile — Todos os prestadores
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Prestador" as prestador
+
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Todos os prestadores" {
+     usecase "HPET37\nCorrigir e Reenviar\nCadastro Rejeitado" as UC37
+     usecase "HPET12e\nConsultar Financeiro" as UC12e
+     usecase "HPET12f\nSolicitar Repasse" as UC12f
+   }
+ }
+
+ usecase "HPET29\nConsultar Central de Notificações\n[módulo comum]" as EXT29 <<referência externa>>
+ usecase "HPET27\nRepassar Valores\n[módulo Pagamentos]" as EXT27 <<referência externa>>
+
+ prestador -- UC37
+ prestador -- UC12e
+ prestador -- UC12f
+ UC37 -[dashed,norank]-> EXT29 : <<extend>>\n[cadastro rejeitado]
+ UC12f ..> EXT27 : <<include>>
+
+ note right of UC37
+   Reabre o fluxo de notificação\n   HPET29, no módulo comum.
+ end note
+ note right of UC12f
+   Solicita HPET27, no módulo\n   Backend de Pagamentos.
+ end note
+
+ legend right
+   <b>Escopo</b>
+   Funções comuns a Host, Pet Sitter e Pet Walker.
+ endlegend
+@enduml

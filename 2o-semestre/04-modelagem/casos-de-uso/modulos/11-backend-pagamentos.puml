@@ -1,0 +1,58 @@
+@startuml 11_Backend_Pagamentos
+ title HOSPETSE — Backend — Sistema de Pagamento
+ top to bottom direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Gateway de Pagamento\n(sandbox)" as gateway <<sistema externo>>
+
+ rectangle "HOSPETSE" {
+   package "Backend — Sistema de Pagamento" {
+     package "Processamento" {
+       usecase "HPET26\nProcessar Pagamento" as UC26
+       usecase "HPET28\nProcessar Cancelamento/\nEstorno" as UC28
+       usecase "HPET27\nRepassar Valores" as UC27
+     }
+     package "Registro financeiro" {
+       usecase "HPET28a\nRegistrar Transação\nFinanceira" as UC28a
+     }
+   }
+ }
+
+ UC26 -- gateway
+ UC28 -- gateway
+ UC27 -- gateway
+
+ UC26 ..> UC28a : <<include>>
+ UC28 ..> UC28a : <<include>>
+ UC27 ..> UC28a : <<include>>
+
+ note right of UC26
+   Acionado por HPET07a,\n   no módulo Mobile Tutor.
+ end note
+ note right of UC28
+   Acionado por HPET04a,\n   no módulo Mobile Tutor.
+ end note
+ note right of UC27
+   Acionado por HPET12f,\n   no módulo Mobile Prestadores.
+ end note
+ note bottom of UC28a
+   Também recebe registros de HPET43,\n   no módulo Web Financeiro.
+ end note
+
+ legend right
+   <b>Escopo</b>
+   Casos internos do subsistema de Pagamentos.
+   <b>Ator</b>
+   O Sistema de Pagamento é interno;\n   o Gateway é o sistema externo.
+ endlegend
+@enduml

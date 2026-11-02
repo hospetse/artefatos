@@ -1,0 +1,95 @@
+@startuml 03-crud-generico-cadastro-de-pet
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+
+actor Tutor
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App Mobile" as App
+end box
+
+box "hospetse-backend" #FFF8F0
+  control "Autenticação\n(requireUser)" as MW
+  boundary "Controller\n(pet.controller)" as Ctrl
+  control "Policy\n(requireTutor)" as Pol
+  control "Service\n(pet.service)" as Svc
+  database "Banco do back-end" as DBB
+end box
+
+legend top right
+  Setas cinzas: planejado no App (as telas de pet ainda não existem).
+  O back-end está implementado (POST e GET /api/v1/me/pets).
+endlegend
+
+== 1. Cadastrar (POST) ==
+
+Tutor -[#999999]> App : preenche nome, espécie, porte, raça, nascimento e observações
+App -[#999999]> MW : POST /api/v1/me/pets\nAuthorization: Bearer accessToken + dados do pet
+activate MW
+MW -> MW : confere o JWT (assinatura RS256, iss, aud, validade)
+
+alt token ausente, expirado ou inválido
+  MW --> App : 401 TOKEN_INVALID
+else token válido
+  MW -> DBB : busca User pelo sub, com Tutor e endereço
+  alt User não existe
+    MW --> App : 404 USER_NOT_FOUND
+  else User encontrado
+    MW -> Ctrl : repassa a requisição com req.user
+    deactivate MW
+    activate Ctrl
+    Ctrl -> Pol : requireTutor(req.user)
+    alt usuário ainda não é Tutor (perfil incompleto)
+      Pol --> Ctrl : erro PROFILE_INCOMPLETE
+      Ctrl --> App : 403 Complete seu perfil antes de cadastrar um pet
+    else é Tutor
+      Pol --> Ctrl : tutor
+      Ctrl -> Ctrl : valida todos os campos de uma vez\n(espécie e porte em listas fechadas; tutorId no body é recusado)
+      alt algum campo inválido
+        Ctrl --> App : 400 VALIDATION_ERROR { details: [campo, motivo] }
+        App -[#999999]-> Tutor : mostra o erro em cada campo
+      else campos válidos
+        Ctrl -> Svc : createPetService(tutor.id, dados)
+        activate Svc
+        Svc -> DBB : INSERT em pets (tutorId vem do token, active = true)
+        Svc --> Ctrl : pet criado
+        deactivate Svc
+        Ctrl --> App : 201 { id, name, species, breed, size, birthDate, ... }
+        App -[#999999]-> Tutor : mostra o pet na lista
+      end
+    end
+    deactivate Ctrl
+  end
+end
+
+== 2. Listar (GET) ==
+
+App -[#999999]> MW : GET /api/v1/me/pets?page=1&pageSize=20
+ref over MW, DBB : confere o JWT e carrega o User (mesmo caminho dos passos 3 a 6, com 401 e 404)
+MW -> Ctrl : repassa a requisição com req.user
+activate Ctrl
+Ctrl -> Pol : requireTutor(req.user)
+Pol --> Ctrl : tutor (403 PROFILE_INCOMPLETE se não for)
+Ctrl -> Ctrl : valida page (a partir de 1) e pageSize (1 a 50)
+
+alt parâmetros inválidos
+  Ctrl --> App : 400 VALIDATION_ERROR
+else parâmetros válidos
+  Ctrl -> Svc : listPetsService(tutor.id, page, pageSize)
+  activate Svc
+  group transação de leitura
+    Svc -> DBB : busca os pets ativos do Tutor, ordenados e paginados
+    Svc -> DBB : conta o total de pets ativos
+  end
+  Svc --> Ctrl : { items, page, pageSize, total }
+  deactivate Svc
+  Ctrl --> App : 200 { items, page, pageSize, total }
+end
+deactivate Ctrl
+
+
+@enduml

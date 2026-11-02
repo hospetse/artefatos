@@ -1,0 +1,51 @@
+@startuml 09_Mobile_Pet_Sitter
+ title HOSPETSE — Mobile — Módulo Pet Sitter
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Prestador" as prestador
+ actor "Pet Sitter" as sitter
+ actor "Tempo" as tempo <<sistema>>
+
+ sitter -[norank]-|> prestador
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Módulo Pet Sitter" {
+     package "Cadastro e disponibilidade" {
+       usecase "HPET16\nCadastrar-se como\nPet Sitter" as UC16
+       usecase "HPET16a\nEditar Perfil\nde Pet Sitter" as UC16a
+       usecase "HPET16b\nDefinir Área de Atuação/\nDisponibilidade (Pet Sitter)" as UC16b
+     }
+     package "Solicitação e execução" {
+       usecase "HPET17\nReceber Solicitação\nde Visita" as UC17
+       usecase "HPET17a\nAceitar/Recusar\nSolicitação de Visita" as UC17a
+       usecase "HPET17b\nRegistrar Execução\ndo Serviço" as UC17b
+     }
+   }
+ }
+
+ sitter -- UC16
+ sitter -- UC16a
+ sitter -- UC16b
+ sitter -- UC17
+ sitter -- UC17a
+ sitter -- UC17b
+ tempo -- UC17a
+
+ legend right
+   <b>Escopo</b>
+   Cadastro, disponibilidade, aceite e execução\n   do serviço de Pet Sitter.
+ endlegend
+@enduml

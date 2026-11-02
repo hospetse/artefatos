@@ -1,0 +1,132 @@
+@startuml 01-cadastro-com-pin-e-provisionamento
+
+autonumber
+hide footbox
+skinparam responseMessageBelowArrow true
+skinparam sequenceMessageAlign left
+skinparam maxMessageSize 260
+
+actor Tutor
+
+box "hospetse-mobile" #F2F7FF
+  boundary "App Mobile" as App
+end box
+
+box "hospetse-auth-service" #F4FFF2
+  control "Auth Server" as Auth
+  database "Banco do Auth" as DBA
+end box
+
+participant "Resend" as Mail <<serviço externo>>
+
+box "hospetse-backend" #FFF8F0
+  control "Back-end" as API
+  database "Banco do back-end" as DBB
+end box
+
+legend top right
+  Implementado no App, no Auth Server e no back-end.
+endlegend
+
+== 1. Pedir o código de verificação ==
+
+Tutor -> App : informa nome, e-mail, senha e aceite dos termos
+App -> App : valida o formulário
+App -> Auth : POST /api/v1/auth/request-pin\n{ email }
+activate Auth
+Auth -> DBA : existe UserAuth ativo com este e-mail?
+
+alt e-mail já tem conta ativa
+  Auth --> App : 409 Usuário já ativo
+  App --> Tutor : volta ao login com o aviso "e-mail já cadastrado"
+else último código pedido há menos de 60 s
+  Auth --> App : 429 Aguarde para pedir um novo código
+else pode enviar
+  Auth -> Auth : gera PIN de 6 dígitos e o hash HMAC-SHA256
+
+  group transação no banco do Auth (até 10 s)
+    Auth -> DBA : invalida os códigos ainda abertos deste e-mail
+    Auth -> DBA : cria EmailVerification (só o hash, expira em 15 min)
+    Auth -> Mail : POST /emails (PIN no texto)
+    activate Mail
+    Mail --> Auth : 200, erro ou timeout de 5 s
+    deactivate Mail
+  end
+
+  alt e-mail enviado
+    Auth --> App : 201 { challengeId }
+    App --> Tutor : abre a tela do código
+  else Resend falhou
+    Auth --> App : 503 Não foi possível enviar o código
+  end
+end
+deactivate Auth
+
+
+== 2. Confirmar o código e criar a conta ==
+
+Tutor -> App : digita o PIN de 6 dígitos
+App -> Auth : POST /api/v1/auth/register\n{ challengeId, pin, password, name, acceptedTerms, termsVersion }
+activate Auth
+Auth -> DBA : busca EmailVerification pelo challengeId
+
+alt código não encontrado
+  Auth --> App : 404
+else código expirado, invalidado ou já consumido sem cadastro pendente
+  Auth --> App : 410 Código expirado ou já utilizado
+else 5 tentativas erradas
+  Auth --> App : 429 Limite de tentativas atingido
+else PIN incorreto
+  Auth -> DBA : attempts + 1
+  Auth --> App : 401 Código inválido
+  App --> Tutor : mantém o código na tela para tentar de novo
+else PIN correto
+  Auth -> Auth : hash da senha (Argon2id)
+
+  group transação no banco do Auth
+    Auth -> DBA : marca o código como consumido
+    Auth -> DBA : busca UserAuth pelo e-mail
+    opt conta ainda não está ativa
+      Auth -> DBA : cria UserAuth com status pending_provisioning\n(na retentativa, reaproveita o pendente)
+    end
+  end
+
+  alt conta já ativa, ou outra requisição criou o mesmo e-mail ao mesmo tempo (P2002)
+    Auth --> App : 409 E-mail já cadastrado
+    App --> Tutor : volta ao login com o aviso "e-mail já cadastrado"
+  else conta pendente pronta
+    loop até 3 tentativas, só em erro 5xx ou sem resposta (timeout de 3 s, espera de 200 e 400 ms)
+      Auth -> API : PUT /api/v1/internal/users/{authUserId}\n{ email, name } + token de serviço
+      activate API
+      API -> API : valida o token de serviço (401 se inválido)
+      API -> DBB : busca User pelo authUserId
+      alt User já existe com o mesmo e-mail
+        API --> Auth : 200 (repetição idempotente)
+      else User não existe
+        API -> DBB : cria User
+        API --> Auth : 201 { userId }
+      else e-mail de outro User, ou authUserId já ligado a outro e-mail
+        API --> Auth : 409
+      end
+      deactivate API
+    end
+
+    alt back-end respondeu 409
+      Auth --> App : 409 E-mail já cadastrado
+      App --> Tutor : volta ao login com o aviso "e-mail já cadastrado"
+    else falhou nas 3 tentativas, ou erro 4xx, que não é repetido
+      Auth --> App : 503 Não foi possível concluir o cadastro
+    else back-end confirmou (200 ou 201)
+      Auth -> DBA : status = active, provisionedAt
+      Auth -> Auth : assina o access token JWT RS256 (15 min)
+      Auth -> DBA : salva o hash do refresh token (30 dias)
+      Auth --> App : 201 { accessToken, refreshToken, expiresIn }
+      App -> App : guarda os tokens no SecureStore
+      App --> Tutor : abre a Home
+    end
+  end
+end
+deactivate Auth
+
+
+@enduml

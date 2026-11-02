@@ -1,0 +1,42 @@
+@startuml 08a_Mobile_Host_Perfil_e_Agenda
+ title HOSPETSE — Mobile — Host — Perfil e agenda
+ left to right direction
+ skinparam packageStyle rectangle
+ skinparam shadowing false
+ skinparam defaultFontName Arial
+ skinparam linetype polyline
+ skinparam nodesep 50
+ skinparam ranksep 40
+ skinparam usecase {
+   BackgroundColor #FFFFFF
+   BorderColor #444444
+ }
+ skinparam ArrowColor #333333
+
+ actor "Usuário do App" as usuario
+ actor "Prestador" as prestador
+ actor "Host" as host
+ host -[norank]-|> prestador
+ prestador -[norank]-|> usuario
+
+ rectangle "HOSPETSE" {
+   package "Mobile — Host — Perfil e agenda" {
+     usecase "HPET10\nCadastrar Perfil\nde Host/Hotel" as UC10
+     usecase "HPET10a\nEditar Perfil\nde Host/Hotel" as UC10a
+     usecase "HPET10b\nInativar Perfil de Host" as UC10b
+     usecase "HPET11\nGerenciar Agenda" as UC11
+     usecase "HPET11a\nDefinir Preços e\nTabela de Serviços" as UC11a
+   }
+ }
+
+ host -- UC10
+ host -- UC10a
+ host -- UC10b
+ host -- UC11
+ host -- UC11a
+
+ legend right
+   <b>Escopo</b>
+   Perfil, agenda, disponibilidade e preços do Host.
+ endlegend
+@enduml
