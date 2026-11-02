@@ -89,7 +89,7 @@ O código novo fica em `src/payments/`, seguindo o ADR-015.
 
 **Eventos do webhook (formato Snapshot):** `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `payment_method.attached`, `refund.updated` e `refund.failed`.
 
-**URL do webhook:** `https://backend-production-7298.up.railway.app/webhooks/stripe`. Em desenvolvimento, usar `stripe listen`.
+**URL do webhook:** `<URL publicada do back-end>/webhooks/stripe`, com a URL na [Wiki #88](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88). Em desenvolvimento, usar `stripe listen`.
 
 Documentação oficial: [sandboxes](https://docs.stripe.com/sandboxes.md), [chaves de API](https://docs.stripe.com/keys.md), [versão da API](https://docs.stripe.com/upgrades.md), [Stripe no Expo](https://docs.expo.dev/versions/latest/sdk/stripe).
 

@@ -75,7 +75,7 @@ O Mobile usa atualmente `EXPO_PUBLIC_AUTH_URL` para autenticação. A configura�
 EXPO_PUBLIC_API_URL=http://localhost:3000
 
 # Ambiente publicado
-EXPO_PUBLIC_API_URL=https://backend-production-7298.up.railway.app
+EXPO_PUBLIC_API_URL=<URL publicada do back-end, na Wiki #88>
 ```
 
 A variável ainda não é consumida pelo código atual do Mobile, porque `searchHosts` e `getHostPage` usam dados de exemplo. Ela deve ser usada quando a integração com a API principal for ativada.
@@ -125,7 +125,7 @@ As variáveis do Stripe seguem o Documento de Integração de Pagamento (#511):
 - O Backend usa chave restrita (`rk_`), não a chave secreta completa (`sk_`).
 - O Railway tem um único ambiente, então usa só chaves de teste.
 - O `STRIPE_WEBHOOK_SECRET` é diferente por ambiente. O endpoint publicado tem um segredo; o `stripe listen` local gera outro.
-- O webhook publicado fica em `https://backend-production-7298.up.railway.app/webhooks/stripe`, fora do `/api/v1`, porque não usa JWT.
+- O webhook publicado fica em `<URL publicada do back-end>/webhooks/stripe` ([Wiki #88](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88)), fora do `/api/v1`, porque não usa JWT.
 - Em desenvolvimento, a Stripe CLI encaminha os eventos para o Backend local:
 
 ```bash
@@ -140,7 +140,7 @@ Arquivo de referência: `hospetse-mobile/.env.example`.
 | Variável | Classificação | Finalidade |
 | --- | --- | --- |
 | `EXPO_PUBLIC_AUTH_URL` | Pública | URL do Auth Service usada no cadastro, login e renovação de tokens |
-| `EXPO_PUBLIC_API_URL` | Pública | URL padrão do Backend: `http://localhost:3000` local ou `https://backend-production-7298.up.railway.app` publicado |
+| `EXPO_PUBLIC_API_URL` | Pública | URL padrão do Backend: `http://localhost:3000` local ou a URL publicada ([Wiki #88](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88)) |
 | `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Pública | Chave publicável do Stripe em modo teste (`pk_test_...`), usada pelo `StripeProvider` para abrir o PaymentSheet |
 
 A chave publicável é a única chave do Stripe que pode ficar no App. A chave secreta e o segredo do webhook ficam só no Backend.

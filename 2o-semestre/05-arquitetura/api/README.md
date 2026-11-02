@@ -1,13 +1,13 @@
 # Documentação da API REST
 
-O contrato de cada serviço é um arquivo OpenAPI 3.1 versionado junto com o código. Cada serviço publicado também mostra o contrato navegável no Swagger UI, em `/docs`.
+O contrato de cada serviço é um arquivo OpenAPI 3.1 versionado junto com o código. Cada serviço também mostra o contrato navegável no Swagger UI, em `/docs`.
 
-| Serviço | Swagger publicado | Contrato OpenAPI | Explicação das rotas |
+| Serviço | Contrato OpenAPI | Explicação das rotas | Swagger local |
 |---|---|---|---|
-| Auth Server | [auth-service-production-36e0.up.railway.app/docs](https://auth-service-production-36e0.up.railway.app/docs) | [docs/openapi.yaml](https://github.com/hospetse/hospetse-auth-service/blob/develop/docs/openapi.yaml) | [README do Auth Server](https://github.com/hospetse/hospetse-auth-service/blob/develop/README.md#rotas) |
-| Back-end | [backend-production-7298.up.railway.app/docs](https://backend-production-7298.up.railway.app/docs) | [docs/openapi.yaml](https://github.com/hospetse/hospetse-backend/blob/develop/docs/openapi.yaml) | [README do back-end](https://github.com/hospetse/hospetse-backend/blob/develop/README.md#documentação-da-api) |
+| Auth Server | [docs/openapi.yaml](https://github.com/hospetse/hospetse-auth-service/blob/develop/docs/openapi.yaml) | [README do Auth Server](https://github.com/hospetse/hospetse-auth-service/blob/develop/README.md#rotas) | `http://localhost:3001/docs` |
+| Back-end | [docs/openapi.yaml](https://github.com/hospetse/hospetse-backend/blob/develop/docs/openapi.yaml) | [README do back-end](https://github.com/hospetse/hospetse-backend/blob/develop/README.md#documentação-da-api) | `http://localhost:3000/docs` |
 
-URLs publicadas, contratos e regras dos tokens: [apis-publicadas.md](apis-publicadas.md) ([Wiki #88](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88)).
+**Swagger publicado:** os links do Swagger dos serviços em produção ficam na [Wiki #88 — APIs publicadas](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88), de acesso restrito ao projeto. A página também traz as regras dos tokens.
 
 ## Padrões
 

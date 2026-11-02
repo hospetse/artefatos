@@ -212,7 +212,7 @@ Hospedar no **Railway**:
 - O Railway confere `GET /health` (`railway.json`) antes de liberar a nova versão.
 - Variáveis e segredos ficam no painel do Railway, nunca na imagem nem no repositório.
 - O deploy é feito pelo estágio CD do Azure Pipelines, só a partir da `develop` e nunca de Pull Request, com `railway up --ci --service <serviço>`. O `RAILWAY_TOKEN` fica no grupo de variáveis `railway`.
-- URLs publicadas: Auth em `https://auth-service-production-36e0.up.railway.app` e back-end em `https://backend-production-7298.up.railway.app`. Os contratos ficam em `/docs`.
+- As URLs publicadas ficam na [Wiki #88](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88), de acesso restrito ao time. Os contratos ficam em `/docs` de cada serviço.
 - Existe um único ambiente publicado. Não há staging.
 - O app mobile não roda no Railway: é executado pelo Expo.
 
