@@ -7,7 +7,7 @@ Como o Hospetse é construído: decisões, estrutura, ambientes e integrações.
 | 1 | ADR-001 a ADR-015 | [adrs.md](adrs.md) ([Wiki #55](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/55)) | Por que cada tecnologia e padrão foi escolhido |
 | 2 | Diagramas C4 | [c4](c4) | Contexto, containers e componentes do sistema |
 | 3 | Ambientes, Deploy e CI/CD | [ambientes-e-deploy.md](ambientes-e-deploy.md) | Como rodar localmente, variáveis de ambiente, Docker, pipelines e Railway |
-| 4 | API REST | [api](api) | Rotas, parâmetros e respostas do Auth Server e do back-end |
+| 4 | API REST e Swagger | [Wiki #88](https://dev.azure.com/escola-ti/Hospetse/_wiki/wikis/Hospetse.wiki/88) (só na Wiki) | Rotas, parâmetros e respostas do Auth Server e do back-end |
 | 5 | Integração de Pagamento | [integracao-de-pagamento](integracao-de-pagamento) | Como cobrar, estornar e registrar pagamentos com o Stripe em sandbox |
 
 ## Visão rápida
